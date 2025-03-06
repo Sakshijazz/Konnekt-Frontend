@@ -1,9 +1,9 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { LogIn, UserPlus } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -11,34 +11,36 @@ const Index = () => {
   return (
     <div className="bankify-landing">
       <header>
-        <nav className="navbar navbar-expand-lg navbar-light navbar-custom">
-          <div className="container">
-            <a className="navbar-brand fw-bold text-primary" href="#">Bankify</a>
-            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-              <span className="navbar-toggler-icon"></span>
-            </button>
-            <div className="collapse navbar-collapse" id="navbarNav">
-              <ul className="navbar-nav ms-auto">
-                <li className="nav-item">
-                  <a className="nav-link" href="#features">Features</a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="#testimonials">Testimonials</a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="#pricing">Pricing</a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="#contact">Contact</a>
-                </li>
-                <li className="nav-item ms-lg-3">
-                  <Button onClick={() => navigate("/login")} className="bg-blue-500 hover:bg-blue-600">Login</Button>
-                </li>
-                <li className="nav-item ms-lg-3">
-                  <Button onClick={() => navigate("/register")} className="bg-green-500 hover:bg-green-600 ml-2">Register</Button>
-                </li>
-              </ul>
-            </div>
+        <nav className="flex items-center justify-between px-6 py-4 bg-white shadow-sm">
+          <div className="flex items-center">
+            <Link to="/" className="text-2xl font-bold text-primary hover:text-primary/90">
+              Bankify
+            </Link>
+          </div>
+          
+          <div className="hidden md:flex items-center space-x-6">
+            <Link to="#features" className="text-gray-600 hover:text-gray-900">Features</Link>
+            <Link to="#testimonials" className="text-gray-600 hover:text-gray-900">Testimonials</Link>
+            <Link to="#pricing" className="text-gray-600 hover:text-gray-900">Pricing</Link>
+            <Link to="#contact" className="text-gray-600 hover:text-gray-900">Contact</Link>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <Button 
+              onClick={() => navigate("/login")} 
+              variant="outline"
+              className="flex items-center"
+            >
+              <LogIn className="mr-2 h-4 w-4" />
+              Login
+            </Button>
+            <Button 
+              onClick={() => navigate("/register")}
+              className="bg-primary hover:bg-primary/90 text-white flex items-center"
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              Sign Up
+            </Button>
           </div>
         </nav>
       </header>
