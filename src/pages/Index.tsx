@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -99,10 +100,10 @@ const Index = () => {
             <div className="col-lg-4">
               <div className="testimonial-card">
                 <div className="d-flex align-items-center mb-3">
-                  <img src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7" class="testimonial-avatar" alt="Customer">
+                  <img src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7" className="testimonial-avatar" alt="Customer" />
                   <div>
-                    <h5 class="mb-0">Sarah Johnson</h5>
-                    <small class="text-muted">Small Business Owner</small>
+                    <h5 className="mb-0">Sarah Johnson</h5>
+                    <small className="text-muted">Small Business Owner</small>
                   </div>
                 </div>
                 <p>"Bankify has transformed how I manage my business finances. The user interface is intuitive and the mobile app is simply amazing!"</p>
@@ -111,10 +112,10 @@ const Index = () => {
             <div className="col-lg-4">
               <div className="testimonial-card">
                 <div className="d-flex align-items-center mb-3">
-                  <img src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b" class="testimonial-avatar" alt="Customer">
+                  <img src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b" className="testimonial-avatar" alt="Customer" />
                   <div>
-                    <h5 class="mb-0">Michael Torres</h5>
-                    <small class="text-muted">Software Developer</small>
+                    <h5 className="mb-0">Michael Torres</h5>
+                    <small className="text-muted">Software Developer</small>
                   </div>
                 </div>
                 <p>"The budgeting tools and spending insights have helped me save more than I ever thought possible. Highly recommended!"</p>
@@ -123,10 +124,10 @@ const Index = () => {
             <div className="col-lg-4">
               <div className="testimonial-card">
                 <div className="d-flex align-items-center mb-3">
-                  <img src="https://images.unsplash.com/photo-1518770660439-4636190af475" class="testimonial-avatar" alt="Customer">
+                  <img src="https://images.unsplash.com/photo-1518770660439-4636190af475" className="testimonial-avatar" alt="Customer" />
                   <div>
-                    <h5 class="mb-0">Emily Chen</h5>
-                    <small class="text-muted">Graduate Student</small>
+                    <h5 className="mb-0">Emily Chen</h5>
+                    <small className="text-muted">Graduate Student</small>
                   </div>
                 </div>
                 <p>"As a student, I love how easy Bankify makes tracking my expenses. The automatic categorization feature is a game-changer!"</p>
@@ -147,57 +148,57 @@ const Index = () => {
               <div className="card h-100">
                 <div className="card-body text-center p-5">
                   <h3 className="card-title">Basic</h3>
-                  <div class="my-3">
-                    <span class="display-4 fw-bold">$0</span>
-                    <span class="text-muted">/month</span>
+                  <div className="my-3">
+                    <span className="display-4 fw-bold">$0</span>
+                    <span className="text-muted">/month</span>
                   </div>
-                  <ul class="list-unstyled text-start">
-                    <li class="mb-2">✅ Free transfers</li>
-                    <li class="mb-2">✅ Basic financial insights</li>
-                    <li class="mb-2">✅ Mobile app access</li>
-                    <li class="mb-2 text-muted">❌ Advanced budgeting tools</li>
-                    <li class="mb-2 text-muted">❌ Priority support</li>
+                  <ul className="list-unstyled text-start">
+                    <li className="mb-2">✅ Free transfers</li>
+                    <li className="mb-2">✅ Basic financial insights</li>
+                    <li className="mb-2">✅ Mobile app access</li>
+                    <li className="mb-2 text-muted">❌ Advanced budgeting tools</li>
+                    <li className="mb-2 text-muted">❌ Priority support</li>
                   </ul>
-                  <button class="btn btn-outline-primary w-100 mt-3">Get Started</button>
+                  <button className="btn btn-outline-primary w-100 mt-3">Get Started</button>
                 </div>
               </div>
             </div>
             <div className="col-md-4">
               <div className="card h-100 border-primary">
                 <div className="card-body text-center p-5">
-                  <div class="badge bg-primary mb-2">Most Popular</div>
-                  <h3 class="card-title">Premium</h3>
-                  <div class="my-3">
-                    <span class="display-4 fw-bold">$5</span>
-                    <span class="text-muted">/month</span>
+                  <div className="badge bg-primary mb-2">Most Popular</div>
+                  <h3 className="card-title">Premium</h3>
+                  <div className="my-3">
+                    <span className="display-4 fw-bold">$5</span>
+                    <span className="text-muted">/month</span>
                   </div>
-                  <ul class="list-unstyled text-start">
-                    <li class="mb-2">✅ Unlimited transfers</li>
-                    <li class="mb-2">✅ Advanced financial insights</li>
-                    <li class="mb-2">✅ Mobile app access</li>
-                    <li class="mb-2">✅ Advanced budgeting tools</li>
-                    <li class="mb-2 text-muted">❌ Priority support</li>
+                  <ul className="list-unstyled text-start">
+                    <li className="mb-2">✅ Unlimited transfers</li>
+                    <li className="mb-2">✅ Advanced financial insights</li>
+                    <li className="mb-2">✅ Mobile app access</li>
+                    <li className="mb-2">✅ Advanced budgeting tools</li>
+                    <li className="mb-2 text-muted">❌ Priority support</li>
                   </ul>
-                  <button class="btn btn-primary w-100 mt-3">Get Started</button>
+                  <button className="btn btn-primary w-100 mt-3">Get Started</button>
                 </div>
               </div>
             </div>
             <div className="col-md-4">
               <div className="card h-100">
                 <div className="card-body text-center p-5">
-                  <h3 class="card-title">Business</h3>
-                  <div class="my-3">
-                    <span class="display-4 fw-bold">$15</span>
-                    <span class="text-muted">/month</span>
+                  <h3 className="card-title">Business</h3>
+                  <div className="my-3">
+                    <span className="display-4 fw-bold">$15</span>
+                    <span className="text-muted">/month</span>
                   </div>
-                  <ul class="list-unstyled text-start">
-                    <li class="mb-2">✅ Unlimited transfers</li>
-                    <li class="mb-2">✅ Business financial insights</li>
-                    <li class="mb-2">✅ Mobile app access</li>
-                    <li class="mb-2">✅ Advanced budgeting tools</li>
-                    <li class="mb-2">✅ Priority support</li>
+                  <ul className="list-unstyled text-start">
+                    <li className="mb-2">✅ Unlimited transfers</li>
+                    <li className="mb-2">✅ Business financial insights</li>
+                    <li className="mb-2">✅ Mobile app access</li>
+                    <li className="mb-2">✅ Advanced budgeting tools</li>
+                    <li className="mb-2">✅ Priority support</li>
                   </ul>
-                  <button class="btn btn-outline-primary w-100 mt-3">Get Started</button>
+                  <button className="btn btn-outline-primary w-100 mt-3">Get Started</button>
                 </div>
               </div>
             </div>
@@ -225,19 +226,19 @@ const Index = () => {
                 <div className="card-body p-5">
                   <h3 className="text-center mb-4">Contact Us</h3>
                   <form id="contactForm">
-                    <div class="mb-3">
-                      <label for="name" class="form-label">Name</label>
-                      <input type="text" class="form-control" id="name" required>
+                    <div className="mb-3">
+                      <label htmlFor="name" className="form-label">Name</label>
+                      <input type="text" className="form-control" id="name" required />
                     </div>
-                    <div class="mb-3">
-                      <label for="email" class="form-label">Email</label>
-                      <input type="email" class="form-control" id="email" required>
+                    <div className="mb-3">
+                      <label htmlFor="email" className="form-label">Email</label>
+                      <input type="email" className="form-control" id="email" required />
                     </div>
-                    <div class="mb-3">
-                      <label for="message" class="form-label">Message</label>
-                      <textarea class="form-control" id="message" rows="5" required></textarea>
+                    <div className="mb-3">
+                      <label htmlFor="message" className="form-label">Message</label>
+                      <textarea className="form-control" id="message" rows={5} required></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Send Message</button>
+                    <button type="submit" className="btn btn-primary w-100">Send Message</button>
                   </form>
                 </div>
               </div>
@@ -255,40 +256,40 @@ const Index = () => {
             </div>
             <div className="col-lg-2">
               <h5 className="text-white mb-4">Company</h5>
-              <ul class="list-unstyled">
-                <li class="mb-2"><a href="#" class="footer-link">About Us</a></li>
-                <li class="mb-2"><a href="#" class="footer-link">Careers</a></li>
-                <li class="mb-2"><a href="#" class="footer-link">News</a></li>
-                <li class="mb-2"><a href="#" class="footer-link">Partners</a></li>
+              <ul className="list-unstyled">
+                <li className="mb-2"><a href="#" className="footer-link">About Us</a></li>
+                <li className="mb-2"><a href="#" className="footer-link">Careers</a></li>
+                <li className="mb-2"><a href="#" className="footer-link">News</a></li>
+                <li className="mb-2"><a href="#" className="footer-link">Partners</a></li>
               </ul>
             </div>
             <div className="col-lg-2">
               <h5 className="text-white mb-4">Resources</h5>
-              <ul class="list-unstyled">
-                <li class="mb-2"><a href="#" class="footer-link">Blog</a></li>
-                <li class="mb-2"><a href="#" class="footer-link">Help Center</a></li>
-                <li class="mb-2"><a href="#" class="footer-link">Guides</a></li>
-                <li class="mb-2"><a href="#" class="footer-link">API Docs</a></li>
+              <ul className="list-unstyled">
+                <li className="mb-2"><a href="#" className="footer-link">Blog</a></li>
+                <li className="mb-2"><a href="#" className="footer-link">Help Center</a></li>
+                <li className="mb-2"><a href="#" className="footer-link">Guides</a></li>
+                <li className="mb-2"><a href="#" className="footer-link">API Docs</a></li>
               </ul>
             </div>
             <div className="col-lg-4">
               <h5 className="text-white mb-4">Stay Connected</h5>
               <p className="text-white-50">Subscribe to our newsletter for updates</p>
-              <div class="input-group mb-3">
-                <input type="email" class="form-control" placeholder="Your email address">
-                <button class="btn btn-primary" type="button">Subscribe</button>
+              <div className="input-group mb-3">
+                <input type="email" className="form-control" placeholder="Your email address" />
+                <button className="btn btn-primary" type="button">Subscribe</button>
               </div>
             </div>
           </div>
-          <hr class="mt-5 border-white-50">
+          <hr className="mt-5 border-white-50" />
           <div className="row">
             <div className="col-md-6 text-center text-md-start">
               <p className="text-white-50 mb-0">© 2023 Bankify. All rights reserved.</p>
             </div>
             <div className="col-md-6 text-center text-md-end">
-              <a href="#" class="footer-link me-3">Privacy Policy</a>
-              <a href="#" class="footer-link me-3">Terms of Service</a>
-              <a href="#" class="footer-link">Security</a>
+              <a href="#" className="footer-link me-3">Privacy Policy</a>
+              <a href="#" className="footer-link me-3">Terms of Service</a>
+              <a href="#" className="footer-link">Security</a>
             </div>
           </div>
         </div>
