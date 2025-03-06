@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
+import AddCard from "./pages/AddCard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,11 @@ const App = () => (
           <Route path="/transactions" element={
             <RequireAuth>
               <Transactions />
+            </RequireAuth>
+          } />
+          <Route path="/add-card" element={
+            <RequireAuth>
+              <AddCard />
             </RequireAuth>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
