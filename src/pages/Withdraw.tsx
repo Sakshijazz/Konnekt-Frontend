@@ -8,17 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-// Mock accounts data (as fallback)
-const accountsData = [
-  { id: 1, type: "Checking", number: "**** 1234", balance: 2458.65 },
-  { id: 2, type: "Savings", number: "**** 5678", balance: 12750.42 },
-];
-
 const Withdraw = () => {
   const navigate = useNavigate();
   const [amount, setAmount] = useState("");
   const [selectedAccount, setSelectedAccount] = useState("");
   const [accounts, setAccounts] = useState([]);
+  const [cards, setCards] = useState([]);
+  const [selectedCard, setSelectedCard] = useState("");
   
   // Check if user is authenticated and load accounts
   useEffect(() => {
@@ -28,15 +24,43 @@ const Withdraw = () => {
       return;
     }
     
-    // Load accounts from localStorage or use the mock data
-    const savedAccounts = JSON.parse(localStorage.getItem("userAccounts") || JSON.stringify(accountsData));
-    setAccounts(savedAccounts);
+    // Load accounts from localStorage
+    const savedAccounts = JSON.parse(localStorage.getItem("userAccounts") || "[]");
+    // Filter out checking accounts
+    const filteredAccounts = savedAccounts.filter(acc => acc.type !== "Checking");
+    setAccounts(filteredAccounts);
     
-    // Set default selected account
-    if (savedAccounts.length > 0 && !selectedAccount) {
-      setSelectedAccount(savedAccounts[0].id.toString());
+    // Load cards from localStorage
+    const savedCards = JSON.parse(localStorage.getItem("userCards") || "[]");
+    setCards(savedCards);
+    
+    // Set default selected card and account if available
+    if (savedCards.length > 0 && !selectedCard) {
+      setSelectedCard(savedCards[0].id.toString());
+      
+      if (filteredAccounts.length > 0) {
+        // Find linked account for this card
+        const linkedAccount = filteredAccounts.find(acc => acc.linkedCardId === savedCards[0].id);
+        if (linkedAccount) {
+          setSelectedAccount(linkedAccount.id.toString());
+        } else {
+          setSelectedAccount(filteredAccounts[0].id.toString());
+        }
+      }
     }
-  }, [navigate, selectedAccount]);
+  }, [navigate, selectedCard]);
+
+  // Handle card selection change
+  const handleCardChange = (e) => {
+    const cardId = e.target.value;
+    setSelectedCard(cardId);
+    
+    // Find linked account for this card
+    const linkedAccount = accounts.find(acc => acc.linkedCardId === Number(cardId));
+    if (linkedAccount) {
+      setSelectedAccount(linkedAccount.id.toString());
+    }
+  };
 
   const handleWithdraw = () => {
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
@@ -44,44 +68,67 @@ const Withdraw = () => {
       return;
     }
 
+    if (!selectedAccount) {
+      toast.error("Please select an account");
+      return;
+    }
+
     // Find the selected account
-    const accountIndex = accounts.findIndex(acc => acc.id.toString() === selectedAccount);
+    const updatedAccounts = [...accounts];
+    const accountIndex = updatedAccounts.findIndex(acc => acc.id.toString() === selectedAccount);
     if (accountIndex === -1) {
       toast.error("Selected account not found");
       return;
     }
     
     // Check if there's enough balance
-    const currentBalance = accounts[accountIndex].balance || 0;
+    const currentBalance = updatedAccounts[accountIndex].balance || 0;
     if (currentBalance < Number(amount)) {
       toast.error("Insufficient funds");
       return;
     }
     
     // Update the balance
-    const updatedAccounts = [...accounts];
     updatedAccounts[accountIndex].balance = currentBalance - Number(amount);
     
     // Save back to localStorage
-    localStorage.setItem("userAccounts", JSON.stringify(updatedAccounts));
+    const allAccounts = JSON.parse(localStorage.getItem("userAccounts") || "[]");
+    const allAccountIndex = allAccounts.findIndex(acc => acc.id.toString() === selectedAccount);
+    if (allAccountIndex !== -1) {
+      allAccounts[allAccountIndex].balance = updatedAccounts[accountIndex].balance;
+      localStorage.setItem("userAccounts", JSON.stringify(allAccounts));
+    }
+    
     setAccounts(updatedAccounts);
+    
+    // Find selected card details for transaction description
+    const selectedCardObj = cards.find(card => card.id.toString() === selectedCard);
+    const cardDescription = selectedCardObj ? selectedCardObj.bank + " Card" : updatedAccounts[accountIndex].type;
     
     // Add transaction record
     const transactions = JSON.parse(localStorage.getItem("userTransactions") || "[]");
     transactions.unshift({
       id: Date.now(),
       type: "withdraw",
-      description: "Withdrawal from " + updatedAccounts[accountIndex].type,
+      description: `Withdrawal from ${cardDescription}`,
       amount: -Number(amount),
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split('T')[0],
+      accountId: updatedAccounts[accountIndex].id
     });
     localStorage.setItem("userTransactions", JSON.stringify(transactions));
     
-    toast.success(`$${amount} successfully withdrawn`);
+    toast.success(`₹${amount} successfully withdrawn from your account`);
     setAmount("");
     
     // Redirect to dashboard after 2 seconds
     setTimeout(() => navigate("/dashboard"), 2000);
+  };
+
+  // Get account balance for selected account
+  const getSelectedAccountBalance = () => {
+    if (!selectedAccount) return "0.00";
+    const account = accounts.find(acc => acc.id.toString() === selectedAccount);
+    return account ? account.balance.toFixed(2) : "0.00";
   };
 
   return (
@@ -103,6 +150,26 @@ const Withdraw = () => {
           <CardContent>
             <div className="space-y-4">
               <div className="space-y-2">
+                <Label htmlFor="card">Select Card</Label>
+                <select 
+                  id="card"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={selectedCard}
+                  onChange={handleCardChange}
+                >
+                  {cards.length > 0 ? (
+                    cards.map((card) => (
+                      <option key={card.id} value={card.id}>
+                        {card.bank} Card ({card.number})
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">No cards available</option>
+                  )}
+                </select>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="account">Select Account</Label>
                 <select 
                   id="account"
@@ -110,16 +177,20 @@ const Withdraw = () => {
                   value={selectedAccount}
                   onChange={(e) => setSelectedAccount(e.target.value)}
                 >
-                  {accounts.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.type} ({account.number}) - Balance: ${account.balance.toFixed(2)}
-                    </option>
-                  ))}
+                  {accounts.length > 0 ? (
+                    accounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.type} ({account.number}) - Balance: ₹{account.balance.toFixed(2)}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">No accounts available</option>
+                  )}
                 </select>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount ($)</Label>
+                <Label htmlFor="amount">Amount (₹)</Label>
                 <Input
                   id="amount"
                   type="number"
@@ -129,12 +200,13 @@ const Withdraw = () => {
                   min="0.01"
                   step="0.01"
                 />
+                <p className="text-sm text-gray-500">Available balance: ₹{getSelectedAccountBalance()}</p>
               </div>
               
               <Button 
                 className="w-full" 
                 onClick={handleWithdraw}
-                disabled={!amount || isNaN(Number(amount)) || Number(amount) <= 0}
+                disabled={!amount || !selectedAccount || isNaN(Number(amount)) || Number(amount) <= 0}
               >
                 Withdraw Funds
               </Button>
