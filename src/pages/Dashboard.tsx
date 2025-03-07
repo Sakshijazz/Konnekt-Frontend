@@ -12,10 +12,24 @@ const accountsData = [
   { id: 2, type: "Savings", number: "**** 5678", balance: 12750.42 },
 ];
 
-// Mock data for cards
+// Mock data for cards showing Indian banks
 const cardsData = [
-  { id: 1, type: "Visa", number: "**** **** **** 4242", expiry: "05/25", color: "bg-blue-600" },
-  { id: 2, type: "Mastercard", number: "**** **** **** 5555", expiry: "12/24", color: "bg-orange-600" },
+  { 
+    id: 1, 
+    type: "SBI Card", 
+    number: "**** **** **** 4242", 
+    expiry: "05/25", 
+    color: "linear-gradient(90deg, #1e3c72 0%, #2a5298 100%)",
+    bank: "SBI"
+  },
+  { 
+    id: 2, 
+    type: "HDFC Card", 
+    number: "**** **** **** 5555", 
+    expiry: "12/24", 
+    color: "linear-gradient(90deg, #000046 0%, #1CB5E0 100%)",
+    bank: "HDFC"
+  },
 ];
 
 const recentTransactions = [
@@ -61,7 +75,7 @@ const Dashboard = () => {
         {/* Cards section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Your Cards</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Your Bank Cards</h2>
             <Button 
               variant="outline"
               className="flex items-center gap-2" 
@@ -76,12 +90,13 @@ const Dashboard = () => {
             {cards.map((card) => (
               <div 
                 key={card.id}
-                className={`${card.color} rounded-xl p-6 text-white shadow-lg transform transition-transform hover:scale-105`}
+                className="rounded-xl p-6 text-white shadow-lg transform transition-transform hover:scale-105"
+                style={{ background: card.color }}
               >
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <p className="text-sm opacity-80">Card</p>
-                    <p className="font-bold">{card.type}</p>
+                    <p className="text-sm opacity-80">Bank</p>
+                    <p className="font-bold">{card.bank || card.type.split(' ')[0]}</p>
                   </div>
                   <CreditCard className="h-8 w-8" />
                 </div>
@@ -103,7 +118,7 @@ const Dashboard = () => {
             {cards.length === 0 && (
               <div className="col-span-full flex flex-col items-center justify-center bg-gray-50 rounded-xl p-8 border border-dashed border-gray-300">
                 <CreditCard className="h-12 w-12 text-gray-400 mb-3" />
-                <p className="text-gray-500 mb-4">You don't have any cards yet</p>
+                <p className="text-gray-500 mb-4">You don't have any bank cards yet</p>
                 <Button 
                   onClick={() => navigate("/add-card")}
                   className="flex items-center gap-2"

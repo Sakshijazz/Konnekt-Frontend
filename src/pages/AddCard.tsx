@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardNavbar from "@/components/DashboardNavbar";
@@ -8,46 +9,66 @@ import { Label } from "@/components/ui/label";
 import { CreditCard, ArrowLeft, CreditCardIcon, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
-// Card template options
+// Card template options for Indian banks
 const cardTemplates = [
   { 
     id: 1, 
-    name: "World Elite",
-    type: "Mastercard",
-    background: "#000000",
-    annualFee: "$299",
-    cashbackRate: "2%",
-    rewards: "Travel points",
+    name: "SBI Card",
+    type: "Visa",
+    background: "linear-gradient(90deg, #1e3c72 0%, #2a5298 100%)",
+    annualFee: "₹499",
+    cashbackRate: "1.5%",
+    rewards: "SBI Reward Points",
     recommended: true
   },
   { 
     id: 2, 
-    name: "Platinum",
-    type: "Visa",
-    background: "linear-gradient(90deg, #1e3c72 0%, #2a5298 100%)",
-    annualFee: "$199",
-    cashbackRate: "1.5%",
-    rewards: "Cash back",
+    name: "HDFC Card",
+    type: "Mastercard",
+    background: "linear-gradient(90deg, #000046 0%, #1CB5E0 100%)",
+    annualFee: "₹599",
+    cashbackRate: "2%",
+    rewards: "HDFC Reward Points",
     recommended: false
   },
   { 
     id: 3, 
-    name: "Gold Rewards",
+    name: "ICICI Card",
     type: "Visa",
-    background: "linear-gradient(90deg, #b79f60 0%, #d4be7f 100%)",
-    annualFee: "$120",
-    cashbackRate: "1%",
-    rewards: "Retail points",
+    background: "linear-gradient(90deg, #ED213A 0%, #93291E 100%)",
+    annualFee: "₹549",
+    cashbackRate: "1.8%",
+    rewards: "ICICI Payback Points",
     recommended: false
   },
   { 
     id: 4, 
-    name: "Everyday",
+    name: "BOB Card",
     type: "Mastercard",
-    background: "linear-gradient(90deg, #667eea 0%, #764ba2 100%)",
-    annualFee: "$0",
-    cashbackRate: "0.5%",
-    rewards: "Basic rewards",
+    background: "linear-gradient(90deg, #3A6073 0%, #16222A 100%)",
+    annualFee: "₹399",
+    cashbackRate: "1%",
+    rewards: "BOB Reward Points",
+    recommended: false
+  },
+  { 
+    id: 5, 
+    name: "BOI Card",
+    type: "Rupay",
+    background: "linear-gradient(90deg, #4A00E0 0%, #8E2DE2 100%)",
+    annualFee: "₹299",
+    cashbackRate: "1.2%",
+    rewards: "BOI Reward Points",
+    recommended: false
+  },
+  { 
+    id: 6, 
+    name: "Other Bank",
+    type: "Custom",
+    background: "linear-gradient(90deg, #396afc 0%, #2948ff 100%)",
+    annualFee: "Varies",
+    cashbackRate: "Varies",
+    rewards: "Custom Rewards",
     recommended: false
   }
 ];
@@ -82,7 +103,25 @@ const AddCard = () => {
       return;
     }
 
-    // In a real app, you would save this to a database
+    // Create a new card object to save
+    const newCard = {
+      id: Date.now(), // Simple way to generate a unique ID
+      type: selectedCard.name,
+      number: cardDetails.cardNumber.replace(/\d(?=\d{4})/g, "*"), // Mask all but last 4 digits
+      expiry: `${cardDetails.expiryMonth}/${cardDetails.expiryYear}`,
+      color: selectedCard.background,
+      bank: selectedCard.name.split(' ')[0] // Extract bank name (SBI, HDFC, etc.)
+    };
+
+    // Get existing cards from localStorage or initialize an empty array
+    const existingCards = JSON.parse(localStorage.getItem("userCards") || "[]");
+    
+    // Add the new card to the array
+    const updatedCards = [...existingCards, newCard];
+    
+    // Save the updated cards array to localStorage
+    localStorage.setItem("userCards", JSON.stringify(updatedCards));
+
     toast.success("Card added successfully!");
     navigate("/dashboard");
   };
@@ -101,7 +140,7 @@ const AddCard = () => {
             <ArrowLeft size={16} />
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">
-            {step === 1 ? "Select a Card" : "Enter Card Details"}
+            {step === 1 ? "Select a Bank Card" : "Enter Card Details"}
           </h1>
         </div>
 
