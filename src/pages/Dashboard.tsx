@@ -4,15 +4,15 @@ import { useNavigate } from "react-router-dom";
 import DashboardNavbar from "@/components/DashboardNavbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, CreditCard } from "lucide-react";
+import { PlusCircle, CreditCard, ArrowUpRight, ArrowDownLeft, ArrowLeftRight } from "lucide-react";
 
-// Mock data for dashboard
+// Mock data for dashboard (as fallback)
 const accountsData = [
   { id: 1, type: "Checking", number: "**** 1234", balance: 2458.65 },
   { id: 2, type: "Savings", number: "**** 5678", balance: 12750.42 },
 ];
 
-// Mock data for cards showing Indian banks
+// Mock data for cards showing Indian banks (as fallback)
 const cardsData = [
   { 
     id: 1, 
@@ -32,28 +32,39 @@ const cardsData = [
   },
 ];
 
-const recentTransactions = [
-  { id: 1, type: "payment", description: "Coffee Shop", amount: -4.85, date: "2023-06-15" },
-  { id: 2, type: "deposit", description: "Payroll Deposit", amount: 1250.00, date: "2023-06-14" },
-  { id: 3, type: "payment", description: "Grocery Store", amount: -65.38, date: "2023-06-13" },
-  { id: 4, type: "transfer", description: "Transfer to Savings", amount: -200.00, date: "2023-06-12" },
-];
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const [cards, setCards] = useState(cardsData);
+  const [accounts, setAccounts] = useState(accountsData);
+  const [transactions, setTransactions] = useState([]);
   
-  // Check if user is authenticated
+  // Check if user is authenticated and load data
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (!isAuthenticated) {
       navigate("/login");
+      return;
     }
     
     // Load cards from localStorage if available
     const savedCards = localStorage.getItem("userCards");
     if (savedCards) {
       setCards(JSON.parse(savedCards));
+    }
+    
+    // Load accounts from localStorage if available
+    const savedAccounts = localStorage.getItem("userAccounts");
+    if (savedAccounts) {
+      setAccounts(JSON.parse(savedAccounts));
+    } else {
+      // If no accounts in localStorage, initialize with the mock data
+      localStorage.setItem("userAccounts", JSON.stringify(accountsData));
+    }
+    
+    // Load transactions from localStorage if available
+    const savedTransactions = localStorage.getItem("userTransactions");
+    if (savedTransactions) {
+      setTransactions(JSON.parse(savedTransactions));
     }
   }, [navigate]);
 
@@ -70,6 +81,39 @@ const Dashboard = () => {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Welcome back, {username}!</h1>
           <p className="text-gray-600">Here's a summary of your accounts</p>
+        </div>
+        
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-3 gap-4">
+            <Button
+              variant="outline"
+              className="flex flex-col items-center justify-center h-24 bg-white hover:bg-gray-50"
+              onClick={() => navigate("/deposit")}
+            >
+              <ArrowDownLeft className="h-8 w-8 mb-2 text-green-600" />
+              <span>Deposit</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              className="flex flex-col items-center justify-center h-24 bg-white hover:bg-gray-50"
+              onClick={() => navigate("/withdraw")}
+            >
+              <ArrowUpRight className="h-8 w-8 mb-2 text-red-600" />
+              <span>Withdraw</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              className="flex flex-col items-center justify-center h-24 bg-white hover:bg-gray-50"
+              onClick={() => navigate("/transfer")}
+            >
+              <ArrowLeftRight className="h-8 w-8 mb-2 text-blue-600" />
+              <span>Transfer</span>
+            </Button>
+          </div>
         </div>
         
         {/* Cards section */}
@@ -133,7 +177,7 @@ const Dashboard = () => {
         
         {/* Accounts overview */}
         <div className="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-2">
-          {accountsData.map((account) => (
+          {accounts.map((account) => (
             <Card key={account.id}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{account.type} Account</CardTitle>
@@ -142,7 +186,10 @@ const Dashboard = () => {
               <CardContent>
                 <div className="text-2xl font-bold">${account.balance.toFixed(2)}</div>
                 <p className="text-xs text-gray-500 mt-1">Available Balance</p>
-                <Button className="mt-4 w-full" variant="outline">View Details</Button>
+                <div className="flex space-x-2 mt-4">
+                  <Button className="flex-1" variant="outline" onClick={() => navigate("/deposit")}>Deposit</Button>
+                  <Button className="flex-1" variant="outline" onClick={() => navigate("/withdraw")}>Withdraw</Button>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -167,15 +214,20 @@ const Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {recentTransactions.map((transaction) => (
+                    {(transactions.length > 0 ? transactions : JSON.parse(localStorage.getItem("userTransactions") || "[]")).slice(0, 5).map((transaction) => (
                       <tr key={transaction.id} className="bg-white border-b">
                         <td className="px-6 py-4">{transaction.date}</td>
                         <td className="px-6 py-4">{transaction.description}</td>
                         <td className={`px-6 py-4 font-medium ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {transaction.amount > 0 ? '+' : ''}{transaction.amount.toFixed(2)}
+                          {transaction.amount > 0 ? '+' : ''}{parseFloat(transaction.amount).toFixed(2)}
                         </td>
                       </tr>
                     ))}
+                    {transactions.length === 0 && (
+                      <tr className="bg-white border-b">
+                        <td colSpan={3} className="px-6 py-4 text-center">No recent transactions</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

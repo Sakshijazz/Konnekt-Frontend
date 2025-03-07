@@ -10,6 +10,9 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import AddCard from "./pages/AddCard";
+import Deposit from "./pages/Deposit";
+import Withdraw from "./pages/Withdraw";
+import Transfer from "./pages/Transfer";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +52,21 @@ const App = () => (
           <Route path="/add-card" element={
             <RequireAuth>
               <AddCard />
+            </RequireAuth>
+          } />
+          <Route path="/deposit" element={
+            <RequireAuth>
+              <Deposit />
+            </RequireAuth>
+          } />
+          <Route path="/withdraw" element={
+            <RequireAuth>
+              <Withdraw />
+            </RequireAuth>
+          } />
+          <Route path="/transfer" element={
+            <RequireAuth>
+              <Transfer />
             </RequireAuth>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardNavbar from "@/components/DashboardNavbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,28 +7,79 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-// Mock data for transactions
-const transactionsData = [
-  { id: 1, type: "payment", description: "Coffee Shop", amount: -4.85, date: "2023-06-15", category: "Food & Dining" },
-  { id: 2, type: "deposit", description: "Payroll Deposit", amount: 1250.00, date: "2023-06-14", category: "Income" },
-  { id: 3, type: "payment", description: "Grocery Store", amount: -65.38, date: "2023-06-13", category: "Groceries" },
-  { id: 4, type: "transfer", description: "Transfer to Savings", amount: -200.00, date: "2023-06-12", category: "Transfer" },
-  { id: 5, type: "payment", description: "Gas Station", amount: -45.25, date: "2023-06-10", category: "Transportation" },
-  { id: 6, type: "payment", description: "Online Subscription", amount: -14.99, date: "2023-06-08", category: "Entertainment" },
-  { id: 7, type: "payment", description: "Pharmacy", amount: -28.50, date: "2023-06-05", category: "Health" },
-  { id: 8, type: "deposit", description: "Refund", amount: 35.80, date: "2023-06-03", category: "Income" },
-];
-
 const Transactions = () => {
   const navigate = useNavigate();
+  const [transactions, setTransactions] = useState([]);
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   
-  // Check if user is authenticated
+  // Check if user is authenticated and load transactions
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (!isAuthenticated) {
       navigate("/login");
+      return;
+    }
+    
+    // Load transactions from localStorage
+    const savedTransactions = localStorage.getItem("userTransactions");
+    if (savedTransactions) {
+      const parsedTransactions = JSON.parse(savedTransactions);
+      setTransactions(parsedTransactions);
+      setFilteredTransactions(parsedTransactions);
     }
   }, [navigate]);
+
+  // Apply filters when filter conditions change
+  useEffect(() => {
+    let result = transactions;
+    
+    // Apply search filter
+    if (searchTerm) {
+      result = result.filter(transaction => 
+        transaction.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply date filter
+    if (dateFilter) {
+      result = result.filter(transaction => 
+        transaction.date === dateFilter
+      );
+    }
+    
+    // Apply category filter
+    if (categoryFilter !== "all") {
+      result = result.filter(transaction => {
+        if (categoryFilter === "income") {
+          return transaction.amount > 0;
+        } else if (categoryFilter === "expense") {
+          return transaction.amount < 0;
+        } else if (categoryFilter === "transfer") {
+          return transaction.type === "transfer";
+        } else if (categoryFilter === "deposit") {
+          return transaction.type === "deposit";
+        } else if (categoryFilter === "withdraw") {
+          return transaction.type === "withdraw";
+        }
+        return true;
+      });
+    }
+    
+    setFilteredTransactions(result);
+  }, [searchTerm, dateFilter, categoryFilter, transactions]);
+
+  const handleApplyFilters = () => {
+    // Filters are already applied via useEffect, this just provides a button for UX
+  };
+
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setDateFilter("");
+    setCategoryFilter("all");
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -50,25 +101,43 @@ const Transactions = () => {
             <div className="grid gap-4 md:grid-cols-3">
               <div>
                 <Label htmlFor="search">Search</Label>
-                <Input id="search" placeholder="Search transactions..." />
+                <Input 
+                  id="search" 
+                  placeholder="Search transactions..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
               <div>
-                <Label htmlFor="date-range">Date Range</Label>
-                <Input id="date-range" type="date" />
+                <Label htmlFor="date-range">Date</Label>
+                <Input 
+                  id="date-range" 
+                  type="date" 
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                />
               </div>
               <div>
                 <Label htmlFor="category">Category</Label>
-                <select id="category" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                <select 
+                  id="category" 
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                >
                   <option value="all">All Categories</option>
                   <option value="income">Income</option>
-                  <option value="transfer">Transfer</option>
-                  <option value="food">Food & Dining</option>
-                  <option value="transportation">Transportation</option>
-                  <option value="entertainment">Entertainment</option>
+                  <option value="expense">Expenses</option>
+                  <option value="transfer">Transfers</option>
+                  <option value="deposit">Deposits</option>
+                  <option value="withdraw">Withdrawals</option>
                 </select>
               </div>
             </div>
-            <Button className="mt-4">Apply Filters</Button>
+            <div className="flex space-x-2 mt-4">
+              <Button onClick={handleApplyFilters}>Apply Filters</Button>
+              <Button variant="outline" onClick={handleResetFilters}>Reset</Button>
+            </div>
           </CardContent>
         </Card>
         
@@ -81,25 +150,29 @@ const Transactions = () => {
                   <tr>
                     <th scope="col" className="px-6 py-3">Date</th>
                     <th scope="col" className="px-6 py-3">Description</th>
-                    <th scope="col" className="px-6 py-3">Category</th>
+                    <th scope="col" className="px-6 py-3">Type</th>
                     <th scope="col" className="px-6 py-3">Amount</th>
-                    <th scope="col" className="px-6 py-3">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {transactionsData.map((transaction) => (
-                    <tr key={transaction.id} className="bg-white border-b">
-                      <td className="px-6 py-4">{transaction.date}</td>
-                      <td className="px-6 py-4">{transaction.description}</td>
-                      <td className="px-6 py-4">{transaction.category}</td>
-                      <td className={`px-6 py-4 font-medium ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {transaction.amount > 0 ? '+' : ''}{transaction.amount.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <Button variant="ghost" size="sm">Details</Button>
+                  {filteredTransactions.length > 0 ? (
+                    filteredTransactions.map((transaction) => (
+                      <tr key={transaction.id} className="bg-white border-b">
+                        <td className="px-6 py-4">{transaction.date}</td>
+                        <td className="px-6 py-4">{transaction.description}</td>
+                        <td className="px-6 py-4 capitalize">{transaction.type}</td>
+                        <td className={`px-6 py-4 font-medium ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {transaction.amount > 0 ? '+' : ''}{parseFloat(transaction.amount).toFixed(2)}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr className="bg-white border-b">
+                      <td colSpan={4} className="px-6 py-4 text-center">
+                        No transactions found with the current filters
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
