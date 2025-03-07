@@ -6,37 +6,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { PlusCircle, CreditCard, ArrowUpRight, ArrowDownLeft, ArrowLeftRight } from "lucide-react";
 
-// Mock data for dashboard (as fallback)
-const accountsData = [
+// Default accounts data that will be shown if no cards are selected
+const defaultAccountsData = [
   { id: 1, type: "Checking", number: "**** 1234", balance: 2458.65 },
-  { id: 2, type: "Savings", number: "**** 5678", balance: 12750.42 },
-];
-
-// Mock data for cards showing Indian banks (as fallback)
-const cardsData = [
-  { 
-    id: 1, 
-    type: "SBI Card", 
-    number: "**** **** **** 4242", 
-    expiry: "05/25", 
-    color: "linear-gradient(90deg, #1e3c72 0%, #2a5298 100%)",
-    bank: "SBI"
-  },
-  { 
-    id: 2, 
-    type: "HDFC Card", 
-    number: "**** **** **** 5555", 
-    expiry: "12/24", 
-    color: "linear-gradient(90deg, #000046 0%, #1CB5E0 100%)",
-    bank: "HDFC"
-  },
+  { id: 2, type: "Savings", number: "**** 5678", balance: 9500.42 },
 ];
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [cards, setCards] = useState(cardsData);
-  const [accounts, setAccounts] = useState(accountsData);
+  const [cards, setCards] = useState([]);
+  const [accounts, setAccounts] = useState(defaultAccountsData);
   const [transactions, setTransactions] = useState([]);
+  const [selectedCard, setSelectedCard] = useState(null);
   
   // Check if user is authenticated and load data
   useEffect(() => {
@@ -57,8 +38,8 @@ const Dashboard = () => {
     if (savedAccounts) {
       setAccounts(JSON.parse(savedAccounts));
     } else {
-      // If no accounts in localStorage, initialize with the mock data
-      localStorage.setItem("userAccounts", JSON.stringify(accountsData));
+      // If no accounts in localStorage, initialize with the default data
+      localStorage.setItem("userAccounts", JSON.stringify(defaultAccountsData));
     }
     
     // Load transactions from localStorage if available
@@ -71,6 +52,35 @@ const Dashboard = () => {
   // Get username from localStorage
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const username = user.username || "User";
+
+  // Handle card selection
+  const handleCardClick = (card) => {
+    setSelectedCard(card);
+    
+    // Generate linked accounts based on the card
+    const cardAccounts = [
+      { 
+        id: card.id * 100 + 1, 
+        type: "Checking", 
+        number: card.number.substring(0, 10) + card.number.substring(card.number.length - 4), 
+        balance: Math.floor(Math.random() * 5000) + 1000,
+        cardId: card.id
+      },
+      { 
+        id: card.id * 100 + 2, 
+        type: "Savings", 
+        number: `**** ${Math.floor(1000 + Math.random() * 9000)}`, 
+        balance: Math.floor(Math.random() * 10000) + 5000,
+        cardId: card.id
+      }
+    ];
+    
+    // Update localStorage with the linked accounts
+    localStorage.setItem("selectedCardAccounts", JSON.stringify(cardAccounts));
+    
+    // Update the displayed accounts
+    setAccounts(cardAccounts);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -134,8 +144,9 @@ const Dashboard = () => {
             {cards.map((card) => (
               <div 
                 key={card.id}
-                className="rounded-xl p-6 text-white shadow-lg transform transition-transform hover:scale-105"
+                className={`rounded-xl p-6 text-white shadow-lg transform transition-transform hover:scale-105 cursor-pointer ${selectedCard && selectedCard.id === card.id ? 'ring-4 ring-primary' : ''}`}
                 style={{ background: card.color }}
+                onClick={() => handleCardClick(card)}
               >
                 <div className="flex justify-between items-start mb-6">
                   <div>
