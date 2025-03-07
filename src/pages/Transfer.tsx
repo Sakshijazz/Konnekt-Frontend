@@ -8,6 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
+// Mock accounts data (as fallback)
+const accountsData = [
+  { id: 1, type: "Checking", number: "**** 1234", balance: 2458.65 },
+  { id: 2, type: "Savings", number: "**** 5678", balance: 12750.42 },
+];
+
 // Mock users for transfer (this would be replaced with actual users in a real app)
 const mockUsers = [
   { id: 1, name: "John Doe", accountNumber: "9876543210" },
@@ -21,8 +27,6 @@ const Transfer = () => {
   const [fromAccount, setFromAccount] = useState("");
   const [toUser, setToUser] = useState("");
   const [accounts, setAccounts] = useState([]);
-  const [cards, setCards] = useState([]);
-  const [selectedCard, setSelectedCard] = useState("");
   const [recipientInfo, setRecipientInfo] = useState("");
   
   // Check if user is authenticated and load accounts
@@ -33,42 +37,69 @@ const Transfer = () => {
       return;
     }
     
-    // Load accounts from localStorage
-    const savedAccounts = JSON.parse(localStorage.getItem("userAccounts") || "[]");
-    // Filter out checking accounts
-    const filteredAccounts = savedAccounts.filter(acc => acc.type !== "Checking");
-    setAccounts(filteredAccounts);
+    // Load accounts from localStorage or use the mock data
+    const savedAccounts = JSON.parse(localStorage.getItem("userAccounts") || JSON.stringify(accountsData));
+    setAccounts(savedAccounts);
     
-    // Load cards from localStorage
-    const savedCards = JSON.parse(localStorage.getItem("userCards") || "[]");
-    setCards(savedCards);
-    
-    // Set default selected card and account if available
-    if (savedCards.length > 0 && !selectedCard) {
-      setSelectedCard(savedCards[0].id.toString());
-      
-      if (filteredAccounts.length > 0) {
-        // Find linked account for this card
-        const linkedAccount = filteredAccounts.find(acc => acc.linkedCardId === savedCards[0].id);
-        if (linkedAccount) {
-          setFromAccount(linkedAccount.id.toString());
-        } else {
-          setFromAccount(filteredAccounts[0].id.toString());
-        }
-      }
+    // Set default selected account
+    if (savedAccounts.length > 0 && !fromAccount) {
+      setFromAccount(savedAccounts[0].id.toString());
     }
-  }, [navigate, selectedCard]);
+  }, [navigate, fromAccount]);
 
-  // Handle card selection change
-  const handleCardChange = (e) => {
-    const cardId = e.target.value;
-    setSelectedCard(cardId);
-    
-    // Find linked account for this card
-    const linkedAccount = accounts.find(acc => acc.linkedCardId === Number(cardId));
-    if (linkedAccount) {
-      setFromAccount(linkedAccount.id.toString());
+  const handleTransfer = () => {
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
     }
+
+    if (!toUser) {
+      toast.error("Please select a recipient");
+      return;
+    }
+
+    // Find the selected account
+    const accountIndex = accounts.findIndex(acc => acc.id.toString() === fromAccount);
+    if (accountIndex === -1) {
+      toast.error("Selected account not found");
+      return;
+    }
+    
+    // Check if there's enough balance
+    const currentBalance = accounts[accountIndex].balance || 0;
+    if (currentBalance < Number(amount)) {
+      toast.error("Insufficient funds");
+      return;
+    }
+    
+    // Update the balance
+    const updatedAccounts = [...accounts];
+    updatedAccounts[accountIndex].balance = currentBalance - Number(amount);
+    
+    // Save back to localStorage
+    localStorage.setItem("userAccounts", JSON.stringify(updatedAccounts));
+    setAccounts(updatedAccounts);
+    
+    // Find recipient info
+    const recipient = mockUsers.find(user => user.id.toString() === toUser);
+    
+    // Add transaction record
+    const transactions = JSON.parse(localStorage.getItem("userTransactions") || "[]");
+    transactions.unshift({
+      id: Date.now(),
+      type: "transfer",
+      description: `Transfer to ${recipient ? recipient.name : 'User ' + toUser}`,
+      amount: -Number(amount),
+      date: new Date().toISOString().split('T')[0]
+    });
+    localStorage.setItem("userTransactions", JSON.stringify(transactions));
+    
+    toast.success(`$${amount} successfully transferred to ${recipient ? recipient.name : 'User ' + toUser}`);
+    setAmount("");
+    setRecipientInfo("");
+    
+    // Redirect to dashboard after 2 seconds
+    setTimeout(() => navigate("/dashboard"), 2000);
   };
 
   const handleRecipientChange = (e) => {
@@ -85,84 +116,6 @@ const Transfer = () => {
     } else {
       setRecipientInfo("");
     }
-  };
-
-  // Get account balance for selected account
-  const getSelectedAccountBalance = () => {
-    if (!fromAccount) return "0.00";
-    const account = accounts.find(acc => acc.id.toString() === fromAccount);
-    return account ? account.balance.toFixed(2) : "0.00";
-  };
-
-  const handleTransfer = () => {
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      toast.error("Please enter a valid amount");
-      return;
-    }
-
-    if (!toUser) {
-      toast.error("Please select a recipient");
-      return;
-    }
-
-    if (!fromAccount) {
-      toast.error("Please select a source account");
-      return;
-    }
-
-    // Find the selected account
-    const updatedAccounts = [...accounts];
-    const accountIndex = updatedAccounts.findIndex(acc => acc.id.toString() === fromAccount);
-    if (accountIndex === -1) {
-      toast.error("Selected account not found");
-      return;
-    }
-    
-    // Check if there's enough balance
-    const currentBalance = updatedAccounts[accountIndex].balance || 0;
-    if (currentBalance < Number(amount)) {
-      toast.error("Insufficient funds");
-      return;
-    }
-    
-    // Update the balance
-    updatedAccounts[accountIndex].balance = currentBalance - Number(amount);
-    
-    // Save back to localStorage
-    const allAccounts = JSON.parse(localStorage.getItem("userAccounts") || "[]");
-    const allAccountIndex = allAccounts.findIndex(acc => acc.id.toString() === fromAccount);
-    if (allAccountIndex !== -1) {
-      allAccounts[allAccountIndex].balance = updatedAccounts[accountIndex].balance;
-      localStorage.setItem("userAccounts", JSON.stringify(allAccounts));
-    }
-    
-    setAccounts(updatedAccounts);
-    
-    // Find recipient info
-    const recipient = mockUsers.find(user => user.id.toString() === toUser);
-    
-    // Find selected card details for transaction description
-    const selectedCardObj = cards.find(card => card.id.toString() === selectedCard);
-    const cardDescription = selectedCardObj ? selectedCardObj.bank + " Card" : updatedAccounts[accountIndex].type;
-    
-    // Add transaction record
-    const transactions = JSON.parse(localStorage.getItem("userTransactions") || "[]");
-    transactions.unshift({
-      id: Date.now(),
-      type: "transfer",
-      description: `Transfer to ${recipient ? recipient.name : 'User ' + toUser} from ${cardDescription}`,
-      amount: -Number(amount),
-      date: new Date().toISOString().split('T')[0],
-      accountId: updatedAccounts[accountIndex].id
-    });
-    localStorage.setItem("userTransactions", JSON.stringify(transactions));
-    
-    toast.success(`₹${amount} successfully transferred to ${recipient ? recipient.name : 'User ' + toUser}`);
-    setAmount("");
-    setRecipientInfo("");
-    
-    // Redirect to dashboard after 2 seconds
-    setTimeout(() => navigate("/dashboard"), 2000);
   };
 
   return (
@@ -184,26 +137,6 @@ const Transfer = () => {
           <CardContent>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="card">From Card</Label>
-                <select 
-                  id="card"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  value={selectedCard}
-                  onChange={handleCardChange}
-                >
-                  {cards.length > 0 ? (
-                    cards.map((card) => (
-                      <option key={card.id} value={card.id}>
-                        {card.bank} Card ({card.number})
-                      </option>
-                    ))
-                  ) : (
-                    <option value="">No cards available</option>
-                  )}
-                </select>
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="fromAccount">From Account</Label>
                 <select 
                   id="fromAccount"
@@ -211,17 +144,12 @@ const Transfer = () => {
                   value={fromAccount}
                   onChange={(e) => setFromAccount(e.target.value)}
                 >
-                  {accounts.length > 0 ? (
-                    accounts.map((account) => (
-                      <option key={account.id} value={account.id}>
-                        {account.type} ({account.number}) - Balance: ₹{account.balance.toFixed(2)}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="">No accounts available</option>
-                  )}
+                  {accounts.map((account) => (
+                    <option key={account.id} value={account.id}>
+                      {account.type} ({account.number}) - Balance: ${account.balance.toFixed(2)}
+                    </option>
+                  ))}
                 </select>
-                <p className="text-sm text-gray-500">Available balance: ₹{getSelectedAccountBalance()}</p>
               </div>
               
               <div className="space-y-2">
@@ -243,7 +171,7 @@ const Transfer = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount (₹)</Label>
+                <Label htmlFor="amount">Amount ($)</Label>
                 <Input
                   id="amount"
                   type="number"
@@ -258,7 +186,7 @@ const Transfer = () => {
               <Button 
                 className="w-full" 
                 onClick={handleTransfer}
-                disabled={!amount || !toUser || !fromAccount || isNaN(Number(amount)) || Number(amount) <= 0}
+                disabled={!amount || !toUser || isNaN(Number(amount)) || Number(amount) <= 0}
               >
                 Transfer Funds
               </Button>
