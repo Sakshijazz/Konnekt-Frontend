@@ -17,7 +17,8 @@ import {
   CreditCard, 
   Smartphone,
   MailCheck,
-  EyeOff 
+  EyeOff,
+  PlusCircle
 } from "lucide-react";
 
 const Settings = () => {
