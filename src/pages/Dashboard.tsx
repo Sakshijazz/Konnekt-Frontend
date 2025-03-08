@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardNavbar from "@/components/DashboardNavbar";
@@ -57,20 +56,26 @@ const Dashboard = () => {
   const handleCardClick = (card) => {
     setSelectedCard(card);
     
-    // Generate linked accounts based on the card
+    // Check if there are already transactions for this card
+    const transactions = JSON.parse(localStorage.getItem("userTransactions") || "[]");
+    const cardTransactions = transactions.filter(t => 
+      t.description && t.description.includes(card.bank || card.type.split(' ')[0])
+    );
+    
+    // Generate linked accounts based on the card - always with zero balances initially
     const cardAccounts = [
       { 
         id: card.id * 100 + 1, 
         type: "Checking", 
         number: card.number.substring(0, 10) + card.number.substring(card.number.length - 4), 
-        balance: Math.floor(Math.random() * 5000) + 1000,
+        balance: 0, // Start with zero balance
         cardId: card.id
       },
       { 
         id: card.id * 100 + 2, 
         type: "Savings", 
         number: `**** ${Math.floor(1000 + Math.random() * 9000)}`, 
-        balance: Math.floor(Math.random() * 10000) + 5000,
+        balance: 0, // Start with zero balance
         cardId: card.id
       }
     ];

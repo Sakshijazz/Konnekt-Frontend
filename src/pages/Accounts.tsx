@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardNavbar from "@/components/DashboardNavbar";
@@ -12,7 +11,6 @@ const Accounts = () => {
   const [accounts, setAccounts] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
   
-  // Check if user is authenticated and load data
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (!isAuthenticated) {
@@ -20,19 +18,16 @@ const Accounts = () => {
       return;
     }
     
-    // Load cards from localStorage
     const savedCards = localStorage.getItem("userCards");
     if (savedCards) {
       setCards(JSON.parse(savedCards));
     }
     
-    // Check if there's a selected card with accounts
     const selectedCardAccounts = localStorage.getItem("selectedCardAccounts");
     if (selectedCardAccounts) {
       const parsedAccounts = JSON.parse(selectedCardAccounts);
       setAccounts(parsedAccounts);
     } else {
-      // No selected card, use default accounts
       const savedAccounts = localStorage.getItem("userAccounts");
       if (savedAccounts) {
         setAccounts(JSON.parse(savedAccounts));
@@ -40,36 +35,31 @@ const Accounts = () => {
     }
   }, [navigate]);
 
-  // Get username from localStorage
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const username = user.username || "User";
 
-  // Handle card selection
   const handleCardClick = (card) => {
     setSelectedCard(card);
     
-    // Generate linked accounts based on the card
     const cardAccounts = [
       { 
         id: card.id * 100 + 1, 
         type: "Checking", 
         number: card.number.substring(0, 10) + card.number.substring(card.number.length - 4), 
-        balance: Math.floor(Math.random() * 5000) + 1000,
+        balance: 0,
         cardId: card.id
       },
       { 
         id: card.id * 100 + 2, 
         type: "Savings", 
         number: `**** ${Math.floor(1000 + Math.random() * 9000)}`, 
-        balance: Math.floor(Math.random() * 10000) + 5000,
+        balance: 0,
         cardId: card.id
       }
     ];
     
-    // Update localStorage with the linked accounts
     localStorage.setItem("selectedCardAccounts", JSON.stringify(cardAccounts));
     
-    // Update the displayed accounts
     setAccounts(cardAccounts);
   };
 
@@ -77,14 +67,12 @@ const Accounts = () => {
     <div className="min-h-screen bg-gray-100">
       <DashboardNavbar />
       
-      {/* Main content */}
       <div className="pt-20 pb-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Your Accounts</h1>
           <p className="text-gray-600">Manage your bank accounts and cards</p>
         </div>
         
-        {/* Cards section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Your Bank Cards</h2>
@@ -144,7 +132,6 @@ const Accounts = () => {
           </div>
         </div>
         
-        {/* Accounts overview */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Your Accounts</h2>
