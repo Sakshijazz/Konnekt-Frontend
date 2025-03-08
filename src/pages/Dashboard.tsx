@@ -6,10 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { PlusCircle, CreditCard, ArrowUpRight, ArrowDownLeft, ArrowLeftRight } from "lucide-react";
 
-// Default accounts data that will be shown if no cards are selected
+// Default accounts data with zero balances for new users
 const defaultAccountsData = [
-  { id: 1, type: "Checking", number: "**** 1234", balance: 2458.65 },
-  { id: 2, type: "Savings", number: "**** 5678", balance: 9500.42 },
+  { id: 1, type: "Checking", number: "**** 1234", balance: 0 },
+  { id: 2, type: "Savings", number: "**** 5678", balance: 0 },
 ];
 
 const Dashboard = () => {
@@ -38,7 +38,7 @@ const Dashboard = () => {
     if (savedAccounts) {
       setAccounts(JSON.parse(savedAccounts));
     } else {
-      // If no accounts in localStorage, initialize with the default data
+      // If no accounts in localStorage, initialize with the default data (zero balances)
       localStorage.setItem("userAccounts", JSON.stringify(defaultAccountsData));
     }
     

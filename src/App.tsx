@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
+import Accounts from "./pages/Accounts";
 import AddCard from "./pages/AddCard";
 import Deposit from "./pages/Deposit";
 import Withdraw from "./pages/Withdraw";
@@ -47,6 +48,11 @@ const App = () => (
           <Route path="/transactions" element={
             <RequireAuth>
               <Transactions />
+            </RequireAuth>
+          } />
+          <Route path="/accounts" element={
+            <RequireAuth>
+              <Accounts />
             </RequireAuth>
           } />
           <Route path="/add-card" element={

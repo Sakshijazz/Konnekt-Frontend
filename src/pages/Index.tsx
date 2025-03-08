@@ -17,13 +17,6 @@ const Index = () => {
               Bankify
             </Link>
           </div>
-          
-          <div className="hidden md:flex items-center space-x-6">
-            <Link to="#features" className="text-gray-600 hover:text-gray-900">Features</Link>
-            <Link to="#testimonials" className="text-gray-600 hover:text-gray-900">Testimonials</Link>
-            <Link to="#pricing" className="text-gray-600 hover:text-gray-900">Pricing</Link>
-            <Link to="#contact" className="text-gray-600 hover:text-gray-900">Contact</Link>
-          </div>
 
           <div className="flex items-center space-x-4">
             <Button 
@@ -197,7 +190,7 @@ const Index = () => {
                     <li className="mb-2">✅ Unlimited transfers</li>
                     <li className="mb-2">✅ Business financial insights</li>
                     <li className="mb-2">✅ Mobile app access</li>
-                    <li className="mb-2">✅ Advanced budgeting tools</li>
+                    <li className="mb-2">�� Advanced budgeting tools</li>
                     <li className="mb-2">✅ Priority support</li>
                   </ul>
                   <button className="btn btn-outline-primary w-100 mt-3">Get Started</button>

@@ -1,11 +1,12 @@
 
 import React from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const DashboardNavbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   
   const handleLogout = () => {
     // Clear authentication data
@@ -14,6 +15,10 @@ const DashboardNavbar = () => {
     
     toast.success("Logged out successfully");
     navigate("/");
+  };
+
+  const isActive = (path) => {
+    return location.pathname === path;
   };
 
   return (
@@ -40,7 +45,7 @@ const DashboardNavbar = () => {
             <li>
               <Link 
                 to="/dashboard" 
-                className="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-600 lg:p-0"
+                className={`block py-2 pr-4 pl-3 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-600 lg:p-0 ${isActive('/dashboard') ? 'text-blue-600' : 'text-gray-700'}`}
               >
                 Dashboard
               </Link>
@@ -48,7 +53,7 @@ const DashboardNavbar = () => {
             <li>
               <Link 
                 to="/transactions" 
-                className="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-600 lg:p-0"
+                className={`block py-2 pr-4 pl-3 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-600 lg:p-0 ${isActive('/transactions') ? 'text-blue-600' : 'text-gray-700'}`}
               >
                 Transactions
               </Link>
@@ -56,7 +61,7 @@ const DashboardNavbar = () => {
             <li>
               <Link 
                 to="/accounts" 
-                className="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-600 lg:p-0"
+                className={`block py-2 pr-4 pl-3 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-600 lg:p-0 ${isActive('/accounts') ? 'text-blue-600' : 'text-gray-700'}`}
               >
                 Accounts
               </Link>
@@ -64,7 +69,7 @@ const DashboardNavbar = () => {
             <li>
               <Link 
                 to="/settings" 
-                className="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-600 lg:p-0"
+                className={`block py-2 pr-4 pl-3 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-600 lg:p-0 ${isActive('/settings') ? 'text-blue-600' : 'text-gray-700'}`}
               >
                 Settings
               </Link>
