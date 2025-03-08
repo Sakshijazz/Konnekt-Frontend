@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CreditCard } from "lucide-react";
+import { CreditCard, ArrowDownLeft } from "lucide-react";
 
 // Default accounts data if no cards are selected
 const defaultAccountsData = [
-  { id: 1, type: "Checking", number: "**** 1234", balance: 2458.65 },
-  { id: 2, type: "Savings", number: "**** 5678", balance: 9500.42 },
+  { id: 1, type: "Checking", number: "**** 1234", balance: 0 },
+  { id: 2, type: "Savings", number: "**** 5678", balance: 0 },
 ];
 
 const Deposit = () => {
@@ -78,32 +78,47 @@ const Deposit = () => {
     const card = cards.find(c => c.id === cardId);
     setSelectedCard(card);
     
+    // Extract last 4 digits of the card number
+    const lastFourDigits = card.number.slice(-4);
+    
     // Generate linked accounts based on the card
     const cardAccounts = [
       { 
         id: card.id * 100 + 1, 
         type: "Checking", 
-        number: card.number.substring(0, 10) + card.number.substring(card.number.length - 4), 
-        balance: Math.floor(Math.random() * 5000) + 1000,
+        number: `**** ${lastFourDigits}`, 
+        balance: 0,
         cardId: card.id
       },
       { 
         id: card.id * 100 + 2, 
         type: "Savings", 
-        number: `**** ${Math.floor(1000 + Math.random() * 9000)}`, 
-        balance: Math.floor(Math.random() * 10000) + 5000,
+        number: `**** ${lastFourDigits}`, 
+        balance: 0,
         cardId: card.id
       }
     ];
     
-    // Update the displayed accounts
-    setAccounts(cardAccounts);
-    if (cardAccounts.length > 0) {
-      setSelectedAccount(cardAccounts[0].id.toString());
-    }
+    // Check if there are existing accounts with balances for this card
+    const existingCardAccounts = JSON.parse(localStorage.getItem("selectedCardAccounts") || "[]");
+    const existingAccounts = existingCardAccounts.filter(acc => acc.cardId === card.id);
     
-    // Save to localStorage for persistence
-    localStorage.setItem("selectedCardAccounts", JSON.stringify(cardAccounts));
+    if (existingAccounts.length > 0) {
+      // Use existing accounts with their balances
+      setAccounts(existingAccounts);
+      if (existingAccounts.length > 0) {
+        setSelectedAccount(existingAccounts[0].id.toString());
+      }
+    } else {
+      // Use new accounts with zero balances
+      setAccounts(cardAccounts);
+      if (cardAccounts.length > 0) {
+        setSelectedAccount(cardAccounts[0].id.toString());
+      }
+      
+      // Save to localStorage for persistence
+      localStorage.setItem("selectedCardAccounts", JSON.stringify(cardAccounts));
+    }
   };
 
   const handleDeposit = () => {
@@ -155,22 +170,25 @@ const Deposit = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       <DashboardNavbar />
       
       {/* Main content */}
       <div className="pt-20 pb-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Deposit Funds</h1>
-          <p className="text-gray-600">Add money to your account</p>
+        <div className="mb-8 flex items-center">
+          <ArrowDownLeft className="h-6 w-6 text-green-600 mr-2" />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Deposit Funds</h1>
+            <p className="text-gray-600">Add money to your account</p>
+          </div>
         </div>
         
-        <Card className="max-w-md mx-auto">
-          <CardHeader>
+        <Card className="max-w-md mx-auto border-gray-200 shadow-md overflow-hidden">
+          <CardHeader className="bg-gray-50 border-b border-gray-200">
             <CardTitle>Make a Deposit</CardTitle>
             <CardDescription>Enter the amount you wish to deposit</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="card">Select Card</Label>
@@ -190,7 +208,7 @@ const Deposit = () => {
               </div>
               
               {selectedCard && (
-                <div className="rounded-lg p-3 bg-gray-50 flex items-center gap-3">
+                <div className="rounded-lg p-3 bg-gray-50 flex items-center gap-3 border border-gray-200">
                   <div 
                     className="w-10 h-10 rounded-md flex items-center justify-center"
                     style={{ background: selectedCard.color }}
@@ -222,28 +240,35 @@ const Deposit = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount ($)</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  placeholder="Enter amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  min="0.01"
-                  step="0.01"
-                />
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500">$</span>
+                  </div>
+                  <Input
+                    id="amount"
+                    type="number"
+                    placeholder="Enter amount"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    min="0.01"
+                    step="0.01"
+                    className="pl-7"
+                  />
+                </div>
               </div>
               
               <Button 
-                className="w-full" 
+                className="w-full bg-green-600 hover:bg-green-700" 
                 onClick={handleDeposit}
                 disabled={!amount || isNaN(Number(amount)) || Number(amount) <= 0}
               >
+                <ArrowDownLeft className="h-4 w-4 mr-2" />
                 Deposit Funds
               </Button>
               
               <Button 
                 variant="outline" 
-                className="w-full" 
+                className="w-full border-gray-300" 
                 onClick={() => navigate("/dashboard")}
               >
                 Cancel
