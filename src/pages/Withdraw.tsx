@@ -8,20 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { CreditCard, ArrowUpRight } from "lucide-react";
-
-// Default accounts data (as fallback)
-const defaultAccountsData = [
-  { id: 1, type: "Checking", number: "**** 1234", balance: 0 },
-  { id: 2, type: "Savings", number: "**** 5678", balance: 0 },
-];
+import { Account, Card as CardType, loadAccounts, createCardAccounts, processTransaction } from "@/utils/accountUtils";
 
 const Withdraw = () => {
   const navigate = useNavigate();
   const [amount, setAmount] = useState("");
   const [selectedAccount, setSelectedAccount] = useState("");
-  const [accounts, setAccounts] = useState([]);
-  const [selectedCard, setSelectedCard] = useState(null);
-  const [cards, setCards] = useState([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
+  const [cards, setCards] = useState<CardType[]>([]);
   
   // Check if user is authenticated and load data
   useEffect(() => {
@@ -38,58 +33,33 @@ const Withdraw = () => {
       setCards(parsedCards);
     }
     
-    // Check if there's a selected card with accounts
-    const selectedCardAccounts = localStorage.getItem("selectedCardAccounts");
-    if (selectedCardAccounts) {
-      const parsedAccounts = JSON.parse(selectedCardAccounts);
-      setAccounts(parsedAccounts);
-      // Set default selected account
-      if (parsedAccounts.length > 0 && !selectedAccount) {
-        setSelectedAccount(parsedAccounts[0].id.toString());
-      }
-    } else {
-      // No selected card, use default accounts
-      const savedAccounts = localStorage.getItem("userAccounts");
-      if (savedAccounts) {
-        const parsedAccounts = JSON.parse(savedAccounts);
-        setAccounts(parsedAccounts);
-        // Set default selected account
-        if (parsedAccounts.length > 0 && !selectedAccount) {
-          setSelectedAccount(parsedAccounts[0].id.toString());
-        }
-      } else {
-        // Initialize with default accounts
-        setAccounts(defaultAccountsData);
-        if (!selectedAccount) {
-          setSelectedAccount(defaultAccountsData[0].id.toString());
-        }
-      }
+    // Load accounts
+    const initialAccounts = loadAccounts(null);
+    setAccounts(initialAccounts);
+    
+    // Set default selected account
+    if (initialAccounts.length > 0) {
+      setSelectedAccount(initialAccounts[0].id.toString());
     }
-  }, [navigate, selectedAccount]);
+  }, [navigate]);
 
-  const handleCardChange = (e) => {
+  const handleCardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const cardId = Number(e.target.value);
     
     if (cardId === 0) {
-      // No card selected, revert to default accounts
+      // No card selected
       setSelectedCard(null);
-      
-      // Load default user accounts
-      const savedAccounts = localStorage.getItem("userAccounts");
-      if (savedAccounts) {
-        const parsedAccounts = JSON.parse(savedAccounts);
-        setAccounts(parsedAccounts);
-        if (parsedAccounts.length > 0) {
-          setSelectedAccount(parsedAccounts[0].id.toString());
-        }
-      } else {
-        setAccounts(defaultAccountsData);
-        setSelectedAccount(defaultAccountsData[0].id.toString());
+      const defaultAccounts = loadAccounts(null);
+      setAccounts(defaultAccounts);
+      if (defaultAccounts.length > 0) {
+        setSelectedAccount(defaultAccounts[0].id.toString());
       }
       return;
     }
     
     const card = cards.find(c => c.id === cardId);
+    if (!card) return;
+    
     setSelectedCard(card);
     
     // Get all card accounts from localStorage
@@ -97,30 +67,14 @@ const Withdraw = () => {
     
     // Check if there are existing accounts for this card
     if (allCardAccounts[card.id]) {
-      // Use existing accounts with their balances
+      // Use existing accounts
       setAccounts(allCardAccounts[card.id]);
       if (allCardAccounts[card.id].length > 0) {
         setSelectedAccount(allCardAccounts[card.id][0].id.toString());
       }
     } else {
-      // Generate new accounts for this card (this shouldn't typically happen during withdraw)
-      const lastFourDigits = card.number.slice(-4);
-      const cardAccounts = [
-        { 
-          id: card.id * 100 + 1, 
-          type: "Checking", 
-          number: `**** ${lastFourDigits}`, 
-          balance: 0,
-          cardId: card.id
-        },
-        { 
-          id: card.id * 100 + 2, 
-          type: "Savings", 
-          number: `**** ${lastFourDigits}`, 
-          balance: 0,
-          cardId: card.id
-        }
-      ];
+      // Generate new accounts for this card
+      const cardAccounts = createCardAccounts(card);
       
       // Save to allCardAccounts for persistence
       allCardAccounts[card.id] = cardAccounts;
@@ -136,66 +90,16 @@ const Withdraw = () => {
   };
 
   const handleWithdraw = () => {
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      toast.error("Please enter a valid amount");
-      return;
-    }
-
-    // Find the selected account
-    const accountIndex = accounts.findIndex(acc => acc.id.toString() === selectedAccount);
-    if (accountIndex === -1) {
-      toast.error("Selected account not found");
-      return;
-    }
+    const result = processTransaction('withdraw', Number(amount), selectedAccount, accounts, selectedCard);
     
-    // Check if there's enough balance
-    const currentBalance = accounts[accountIndex].balance || 0;
-    if (currentBalance < Number(amount)) {
-      toast.error("Insufficient funds");
-      return;
-    }
-    
-    // Update the balance
-    const updatedAccounts = [...accounts];
-    updatedAccounts[accountIndex].balance = currentBalance - Number(amount);
-    
-    // Update state
-    setAccounts(updatedAccounts);
-    
-    // Save to appropriate localStorage location
-    if (selectedCard) {
-      // Save to the card-specific accounts
-      const allCardAccounts = JSON.parse(localStorage.getItem("allCardAccounts") || "{}");
+    if (result.success) {
+      setAccounts(result.updatedAccounts);
+      toast.success(`$${amount} successfully withdrawn`);
+      setAmount("");
       
-      // Update the specific card's accounts
-      allCardAccounts[selectedCard.id] = updatedAccounts;
-      
-      // Save back all card accounts
-      localStorage.setItem("allCardAccounts", JSON.stringify(allCardAccounts));
-      
-      // Also update selectedCardAccounts for the current session
-      localStorage.setItem("selectedCardAccounts", JSON.stringify(updatedAccounts));
-    } else {
-      // Save to default user accounts
-      localStorage.setItem("userAccounts", JSON.stringify(updatedAccounts));
+      // Redirect to dashboard after 2 seconds
+      setTimeout(() => navigate("/dashboard"), 2000);
     }
-    
-    // Add transaction record
-    const transactions = JSON.parse(localStorage.getItem("userTransactions") || "[]");
-    transactions.unshift({
-      id: Date.now(),
-      type: "withdraw",
-      description: `Withdrawal from ${updatedAccounts[accountIndex].type} ${selectedCard ? '(' + selectedCard.bank + ' Card)' : ''}`,
-      amount: -Number(amount),
-      date: new Date().toISOString().split('T')[0]
-    });
-    localStorage.setItem("userTransactions", JSON.stringify(transactions));
-    
-    toast.success(`$${amount} successfully withdrawn`);
-    setAmount("");
-    
-    // Redirect to dashboard after 2 seconds
-    setTimeout(() => navigate("/dashboard"), 2000);
   };
 
   return (
