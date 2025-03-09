@@ -81,44 +81,49 @@ const Deposit = () => {
     // Extract last 4 digits of the card number
     const lastFourDigits = card.number.slice(-4);
     
-    // Generate linked accounts based on the card
-    const cardAccounts = [
-      { 
-        id: card.id * 100 + 1, 
-        type: "Checking", 
-        number: `**** ${lastFourDigits}`, 
-        balance: 0,
-        cardId: card.id
-      },
-      { 
-        id: card.id * 100 + 2, 
-        type: "Savings", 
-        number: `**** ${lastFourDigits}`, 
-        balance: 0,
-        cardId: card.id
-      }
-    ];
+    // Get all card accounts from localStorage
+    const allCardAccounts = JSON.parse(localStorage.getItem("allCardAccounts") || "{}");
     
-    // Check if there are existing accounts with balances for this card
-    const existingCardAccounts = JSON.parse(localStorage.getItem("selectedCardAccounts") || "[]");
-    const existingAccounts = existingCardAccounts.filter(acc => acc.cardId === card.id);
-    
-    if (existingAccounts.length > 0) {
+    // Check if there are existing accounts for this card
+    if (allCardAccounts[card.id]) {
       // Use existing accounts with their balances
-      setAccounts(existingAccounts);
-      if (existingAccounts.length > 0) {
-        setSelectedAccount(existingAccounts[0].id.toString());
+      setAccounts(allCardAccounts[card.id]);
+      if (allCardAccounts[card.id].length > 0) {
+        setSelectedAccount(allCardAccounts[card.id][0].id.toString());
       }
     } else {
-      // Use new accounts with zero balances
+      // Generate new accounts for this card
+      const cardAccounts = [
+        { 
+          id: card.id * 100 + 1, 
+          type: "Checking", 
+          number: `**** ${lastFourDigits}`, 
+          balance: 0,
+          cardId: card.id
+        },
+        { 
+          id: card.id * 100 + 2, 
+          type: "Savings", 
+          number: `**** ${lastFourDigits}`, 
+          balance: 0,
+          cardId: card.id
+        }
+      ];
+      
+      // Save to allCardAccounts for persistence
+      allCardAccounts[card.id] = cardAccounts;
+      localStorage.setItem("allCardAccounts", JSON.stringify(allCardAccounts));
+      
+      // Update state
       setAccounts(cardAccounts);
       if (cardAccounts.length > 0) {
         setSelectedAccount(cardAccounts[0].id.toString());
       }
-      
-      // Save to localStorage for persistence
-      localStorage.setItem("selectedCardAccounts", JSON.stringify(cardAccounts));
     }
+    
+    // Update selectedCardAccounts for the current session
+    const selectedCardAccounts = allCardAccounts[card.id] || [];
+    localStorage.setItem("selectedCardAccounts", JSON.stringify(selectedCardAccounts));
   };
 
   const handleDeposit = () => {
@@ -141,13 +146,24 @@ const Deposit = () => {
     const currentBalance = accountsToUpdate[accountIndex].balance || 0;
     accountsToUpdate[accountIndex].balance = currentBalance + Number(amount);
     
-    // Update the accounts list
+    // Update the accounts list in state
     setAccounts(accountsToUpdate);
     
-    // Save back to localStorage
+    // Save to appropriate localStorage location
     if (selectedCard) {
+      // Save to the card-specific accounts
+      const allCardAccounts = JSON.parse(localStorage.getItem("allCardAccounts") || "{}");
+      
+      // Update the specific card's accounts
+      allCardAccounts[selectedCard.id] = accountsToUpdate;
+      
+      // Save back all card accounts
+      localStorage.setItem("allCardAccounts", JSON.stringify(allCardAccounts));
+      
+      // Also update selectedCardAccounts for the current session
       localStorage.setItem("selectedCardAccounts", JSON.stringify(accountsToUpdate));
     } else {
+      // Save to default user accounts
       localStorage.setItem("userAccounts", JSON.stringify(accountsToUpdate));
     }
     
