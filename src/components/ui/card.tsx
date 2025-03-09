@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -76,4 +77,44 @@ const CardFooter = React.forwardRef<
 ))
 CardFooter.displayName = "CardFooter"
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+// Additional card components for enhanced visual appeal
+const CardGradient = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-lg border bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white shadow-md",
+      className
+    )}
+    {...props}
+  />
+))
+CardGradient.displayName = "CardGradient"
+
+const CardGlass = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-lg border border-white/10 bg-white/10 backdrop-blur-lg shadow-lg text-card-foreground",
+      className
+    )}
+    {...props}
+  />
+))
+CardGlass.displayName = "CardGlass"
+
+export { 
+  Card, 
+  CardHeader, 
+  CardFooter, 
+  CardTitle, 
+  CardDescription, 
+  CardContent,
+  CardGradient,
+  CardGlass
+}
