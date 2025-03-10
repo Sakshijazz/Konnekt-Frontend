@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -97,6 +96,24 @@ const Index = () => {
     }
   ];
 
+  const dashboardIllustrations = [
+    {
+      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop",
+      title: "Comprehensive Analytics",
+      description: "View your complete financial picture with our interactive dashboard featuring custom charts and data visualizations."
+    },
+    {
+      image: "https://images.unsplash.com/photo-1543286386-713bdd548da4?q=80&w=800&auto=format&fit=crop",
+      title: "Investment Tracking",
+      description: "Monitor your portfolio performance with real-time charts and trend analysis."
+    },
+    {
+      image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop",
+      title: "Financial Planning Tools",
+      description: "Use our forecasting tools to project future growth and plan for financial milestones."
+    }
+  ];
+
   return (
     <div className="bg-gray-100 min-h-screen relative overflow-hidden">
       {/* Animated Background */}
@@ -185,6 +202,36 @@ const Index = () => {
                   <div className="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mb-4 mx-auto">
                     {item.icon}
                   </div>
+                  <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                  <p className="text-gray-600">{item.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Financial Dashboard Illustrations */}
+      <section className="py-16 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-800 mb-3">Powerful Financial Dashboard</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Gain insights into your finances with our interactive charts and comprehensive analytics
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {dashboardIllustrations.map((item, index) => (
+              <Card key={index} className="overflow-hidden shadow-lg hover:shadow-xl transition-all">
+                <div className="h-48 overflow-hidden">
+                  <img 
+                    src={item.image} 
+                    alt={item.title} 
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" 
+                  />
+                </div>
+                <CardContent className="p-6">
                   <h3 className="text-xl font-bold mb-2">{item.title}</h3>
                   <p className="text-gray-600">{item.description}</p>
                 </CardContent>
@@ -444,6 +491,24 @@ const Index = () => {
                   alt="Banking app dashboard showing account statistics, transaction history, and financial insights"
                   className="relative z-10 rounded-xl shadow-lg w-full" 
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                <div className="bg-white p-4 rounded-lg shadow-md">
+                  <img 
+                    src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=400&auto=format&fit=crop" 
+                    alt="Financial chart showing growth trends" 
+                    className="w-full h-32 object-cover rounded-md mb-2" 
+                  />
+                  <p className="text-sm text-gray-600">Track your spending patterns</p>
+                </div>
+                <div className="bg-white p-4 rounded-lg shadow-md">
+                  <img 
+                    src="https://images.unsplash.com/photo-1543286386-713bdd548da4?q=80&w=400&auto=format&fit=crop" 
+                    alt="Financial dashboard with pie charts" 
+                    className="w-full h-32 object-cover rounded-md mb-2" 
+                  />
+                  <p className="text-sm text-gray-600">Visualize your asset allocation</p>
+                </div>
               </div>
             </div>
           </div>
