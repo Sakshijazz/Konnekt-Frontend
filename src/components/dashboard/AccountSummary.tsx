@@ -120,105 +120,113 @@ const AccountSummary = ({ accounts }: AccountSummaryProps) => {
           <CardContent className="pt-6">
             <div className="text-2xl font-bold text-indigo-700">${account.balance.toFixed(2)}</div>
             <p className="text-xs text-gray-500 mt-1">Available Balance</p>
-            <div className="flex space-x-2 mt-4">
-              <Button className="flex-1 bg-green-50 text-green-700 hover:bg-green-100 border border-green-200" variant="outline" onClick={() => navigate("/deposit")}>
+            
+            {/* Action buttons for each account */}
+            <div className="grid grid-cols-3 gap-2 mt-4">
+              <Button className="bg-green-50 text-green-700 hover:bg-green-100 border border-green-200" variant="outline" onClick={() => navigate("/deposit")}>
                 <ArrowDownLeft className="h-4 w-4 mr-2" />
                 Deposit
               </Button>
-              <Button className="flex-1 bg-red-50 text-red-700 hover:bg-red-100 border border-red-200" variant="outline" onClick={() => navigate("/withdraw")}>
+              <Button className="bg-red-50 text-red-700 hover:bg-red-100 border border-red-200" variant="outline" onClick={() => navigate("/withdraw")}>
                 <ArrowUpRight className="h-4 w-4 mr-2" />
                 Withdraw
               </Button>
+              <Button 
+                className="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200" 
+                variant="outline" 
+                onClick={() => {
+                  setFromAccount(account.id.toString());
+                  setIsTransferOpen(true);
+                }}
+              >
+                <ArrowLeftRight className="h-4 w-4 mr-2" />
+                Transfer
+              </Button>
             </div>
           </CardContent>
-          <CardFooter className="pt-0">
-            <Dialog open={isTransferOpen} onOpenChange={setIsTransferOpen}>
-              <DialogTrigger asChild>
-                <Button className="w-full bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 mt-2" variant="outline">
-                  <ArrowLeftRight className="h-4 w-4 mr-2" />
-                  Transfer Between Accounts
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Transfer Between Accounts</DialogTitle>
-                  <DialogDescription>
-                    Move money between your accounts instantly.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="fromAccount" className="text-right">
-                      From
-                    </Label>
-                    <Select 
-                      onValueChange={setFromAccount}
-                      defaultValue={fromAccount}
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Select account" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {accounts.map((acc) => (
-                          <SelectItem key={acc.id} value={acc.id.toString()}>
-                            {acc.type} (${acc.balance.toFixed(2)})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="toAccount" className="text-right">
-                      To
-                    </Label>
-                    <Select 
-                      onValueChange={setToAccount}
-                      defaultValue={toAccount}
-                    >
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Select account" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {accounts.map((acc) => (
-                          <SelectItem key={acc.id} value={acc.id.toString()}>
-                            {acc.type} (${acc.balance.toFixed(2)})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="amount" className="text-right">
-                      Amount
-                    </Label>
-                    <div className="relative col-span-3">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500">$</span>
-                      </div>
-                      <Input
-                        id="amount"
-                        type="number"
-                        placeholder="Enter amount"
-                        value={transferAmount}
-                        onChange={(e) => setTransferAmount(e.target.value)}
-                        min="0.01"
-                        step="0.01"
-                        className="pl-7"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button onClick={handleTransfer} className="bg-blue-600 hover:bg-blue-700">
-                    <ArrowLeftRight className="h-4 w-4 mr-2" />
-                    Transfer Now
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </CardFooter>
         </Card>
       ))}
+
+      {/* Common transfer dialog */}
+      <Dialog open={isTransferOpen} onOpenChange={setIsTransferOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Transfer Between Accounts</DialogTitle>
+            <DialogDescription>
+              Move money between your accounts instantly.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="fromAccount" className="text-right">
+                From
+              </Label>
+              <Select 
+                onValueChange={setFromAccount}
+                defaultValue={fromAccount}
+                value={fromAccount}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select account" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map((acc) => (
+                    <SelectItem key={acc.id} value={acc.id.toString()}>
+                      {acc.type} (${acc.balance.toFixed(2)})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="toAccount" className="text-right">
+                To
+              </Label>
+              <Select 
+                onValueChange={setToAccount}
+                defaultValue={toAccount}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select account" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map((acc) => (
+                    <SelectItem key={acc.id} value={acc.id.toString()}>
+                      {acc.type} (${acc.balance.toFixed(2)})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="amount" className="text-right">
+                Amount
+              </Label>
+              <div className="relative col-span-3">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-500">$</span>
+                </div>
+                <Input
+                  id="amount"
+                  type="number"
+                  placeholder="Enter amount"
+                  value={transferAmount}
+                  onChange={(e) => setTransferAmount(e.target.value)}
+                  min="0.01"
+                  step="0.01"
+                  className="pl-7"
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleTransfer} className="bg-blue-600 hover:bg-blue-700">
+              <ArrowLeftRight className="h-4 w-4 mr-2" />
+              Transfer Now
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
