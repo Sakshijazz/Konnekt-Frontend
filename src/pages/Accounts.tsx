@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardNavbar from "@/components/DashboardNavbar";
@@ -40,7 +39,6 @@ const Accounts = () => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const username = user.username || "User";
 
-  // Generate random balance for demo purposes
   const generateRandomBalance = () => {
     return Math.floor(Math.random() * 10000) / 100;
   };
@@ -48,10 +46,8 @@ const Accounts = () => {
   const handleCardClick = (card) => {
     setSelectedCard(card);
     
-    // Extract last 4 digits of the card number
     const lastFourDigits = card.number.slice(-4);
     
-    // Get existing card accounts or create new ones with random balances
     const existingAccounts = JSON.parse(localStorage.getItem("allCardAccounts") || "{}");
     
     let cardAccounts;
@@ -75,7 +71,6 @@ const Accounts = () => {
         }
       ];
       
-      // Store in all accounts
       existingAccounts[card.id] = cardAccounts;
       localStorage.setItem("allCardAccounts", JSON.stringify(existingAccounts));
     }
@@ -85,19 +80,16 @@ const Accounts = () => {
   };
 
   const handleRemoveCard = (e, cardId) => {
-    e.stopPropagation(); // Prevent triggering card click
+    e.stopPropagation();
     
-    // Remove card from cards list
     const updatedCards = cards.filter(card => card.id !== cardId);
     setCards(updatedCards);
     localStorage.setItem("userCards", JSON.stringify(updatedCards));
     
-    // Remove associated accounts
     const allAccounts = JSON.parse(localStorage.getItem("allCardAccounts") || "{}");
     delete allAccounts[cardId];
     localStorage.setItem("allCardAccounts", JSON.stringify(allAccounts));
     
-    // Clear selected card if it was the one deleted
     if (selectedCard && selectedCard.id === cardId) {
       setSelectedCard(null);
       setAccounts([]);

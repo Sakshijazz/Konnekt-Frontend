@@ -17,7 +17,7 @@ const QuickActionButton = ({ icon, label, path, color }: QuickActionProps) => {
   return (
     <Button
       variant="outline"
-      className="flex flex-col items-center justify-center h-24 bg-white/80 backdrop-blur-sm hover:bg-gray-50 rounded-xl shadow-sm border border-gray-200 transition-all hover:shadow-md"
+      className="flex flex-col items-center justify-center h-24 w-full bg-white/80 backdrop-blur-sm hover:bg-gray-50 rounded-xl shadow-sm border border-gray-200 transition-all hover:shadow-md"
       onClick={() => navigate(path)}
     >
       <div className={`h-8 w-8 mb-2 ${color}`}>
@@ -48,6 +48,7 @@ const QuickActions = () => {
       path: "/transfer",
       color: "text-blue-600"
     },
+    /* Commented out as requested
     {
       icon: <CreditCard />,
       label: "Add Card",
@@ -60,6 +61,7 @@ const QuickActions = () => {
       path: "/settings",
       color: "text-gray-600"
     }
+    */
   ];
 
   return (
@@ -68,7 +70,7 @@ const QuickActions = () => {
         <Activity className="mr-2 h-5 w-5 text-indigo-500" />
         Quick Actions
       </h2>
-      <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {actions.map((action, index) => (
           <QuickActionButton 
             key={index}
