@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardNavbar from "@/components/DashboardNavbar";
@@ -20,7 +19,7 @@ const Dashboard = () => {
   const [accounts, setAccounts] = useState(defaultAccountsData);
   const [transactions, setTransactions] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
-  
+
   // Check if user is authenticated and load data
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
@@ -28,13 +27,13 @@ const Dashboard = () => {
       navigate("/login");
       return;
     }
-    
+
     // Load cards from localStorage if available
     const savedCards = localStorage.getItem("userCards");
     if (savedCards) {
       setCards(JSON.parse(savedCards));
     }
-    
+
     // Load accounts from localStorage if available
     const savedAccounts = localStorage.getItem("userAccounts");
     if (savedAccounts) {
@@ -43,7 +42,7 @@ const Dashboard = () => {
       // If no accounts in localStorage, initialize with the default data (zero balances)
       localStorage.setItem("userAccounts", JSON.stringify(defaultAccountsData));
     }
-    
+
     // Load transactions from localStorage if available
     const savedTransactions = localStorage.getItem("userTransactions");
     if (savedTransactions) {
@@ -69,56 +68,60 @@ const Dashboard = () => {
   // Handle card selection
   const handleCardClick = (card) => {
     setSelectedCard(card);
-    
+
     // Extract last 4 digits of the card number
     const lastFourDigits = card.number.slice(-4);
-    
+
     // Get existing card accounts or create new ones with random balances
-    const existingAccounts = JSON.parse(localStorage.getItem("allCardAccounts") || "{}");
-    
+    const existingAccounts = JSON.parse(
+      localStorage.getItem("allCardAccounts") || "{}"
+    );
+
     let cardAccounts;
     if (existingAccounts[card.id]) {
       cardAccounts = existingAccounts[card.id];
     } else {
       cardAccounts = [
-        { 
-          id: card.id * 100 + 1, 
-          type: "Checking", 
-          number: `**** ${lastFourDigits}`, 
+        {
+          id: card.id * 100 + 1,
+          type: "Checking",
+          number: `**** ${lastFourDigits}`,
           balance: generateRandomBalance(),
-          cardId: card.id
+          cardId: card.id,
         },
-        { 
-          id: card.id * 100 + 2, 
-          type: "Savings", 
-          number: `**** ${lastFourDigits}`, 
+        {
+          id: card.id * 100 + 2,
+          type: "Savings",
+          number: `**** ${lastFourDigits}`,
           balance: generateRandomBalance(),
-          cardId: card.id
-        }
+          cardId: card.id,
+        },
       ];
-      
+
       // Store in all accounts
       existingAccounts[card.id] = cardAccounts;
       localStorage.setItem("allCardAccounts", JSON.stringify(existingAccounts));
     }
-    
+
     localStorage.setItem("selectedCardAccounts", JSON.stringify(cardAccounts));
     setAccounts(cardAccounts);
   };
 
   const handleRemoveCard = (e, cardId) => {
     e.stopPropagation(); // Prevent triggering card click
-    
+
     // Remove card from cards list
-    const updatedCards = cards.filter(card => card.id !== cardId);
+    const updatedCards = cards.filter((card) => card.id !== cardId);
     setCards(updatedCards);
     localStorage.setItem("userCards", JSON.stringify(updatedCards));
-    
+
     // Remove associated accounts
-    const allAccounts = JSON.parse(localStorage.getItem("allCardAccounts") || "{}");
+    const allAccounts = JSON.parse(
+      localStorage.getItem("allCardAccounts") || "{}"
+    );
     delete allAccounts[cardId];
     localStorage.setItem("allCardAccounts", JSON.stringify(allAccounts));
-    
+
     // Clear selected card if it was the one deleted
     if (selectedCard && selectedCard.id === cardId) {
       setSelectedCard(null);
@@ -131,32 +134,38 @@ const Dashboard = () => {
     <div className="min-h-screen relative bg-gradient-to-b from-gray-50 to-gray-100 overflow-hidden">
       <AnimatedBackground />
       <DashboardNavbar />
-      
+
       {/* Main content */}
       <div className="pt-20 pb-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
         <div className="mb-8 bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100">
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back, {username}!</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Welcome back, {username.toUpperCase()}!
+          </h1>
           <p className="text-gray-600">Here's a summary of your accounts</p>
         </div>
-        
+
         {/* Quick Actions */}
         <QuickActions />
-        
+
         {/* Cards section */}
-        <CardList 
-          cards={cards} 
-          selectedCard={selectedCard} 
+        <CardList
+          cards={cards}
+          selectedCard={selectedCard}
           username={username}
           onCardClick={handleCardClick}
           onRemoveCard={handleRemoveCard}
         />
-        
+
         {/* Accounts overview */}
         <AccountSummary accounts={accounts} />
-        
+
         {/* Recent Transactions */}
-        <RecentTransactions 
-          transactions={transactions.length > 0 ? transactions : JSON.parse(localStorage.getItem("userTransactions") || "[]")}
+        <RecentTransactions
+          transactions={
+            transactions.length > 0
+              ? transactions
+              : JSON.parse(localStorage.getItem("userTransactions") || "[]")
+          }
         />
       </div>
     </div>
