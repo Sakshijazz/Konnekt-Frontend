@@ -48,6 +48,7 @@ const QuickActions = () => {
       path: "/transfer",
       color: "text-blue-600"
     },
+    /* Commented out as requested
     {
       icon: <CreditCard />,
       label: "Add Card",
@@ -60,6 +61,7 @@ const QuickActions = () => {
       path: "/settings",
       color: "text-gray-600"
     }
+    */
   ];
 
   return (
