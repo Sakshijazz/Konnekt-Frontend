@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import axios from 'axios'; // Import axios for making HTTP requests
 
 const Register = () => {
   const [username, setUsername] = useState("");
@@ -13,7 +14,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Basic validation
@@ -27,13 +28,20 @@ const Register = () => {
       return;
     }
     
-    // In a real app, you would send this data to a backend
-    // For demo, just store in localStorage
-    localStorage.setItem("user", JSON.stringify({ username }));
-    localStorage.setItem("isAuthenticated", "true");
-    
-    toast.success("Registration successful!");
-    navigate("/dashboard");
+    try {
+      // Send registration data to the backend
+      const response = await axios.post('http://localhost:8080/api/auth/register', {
+        username,
+        password
+      });
+
+      if (response.status === 200) {
+        toast.success("Registration successful!");
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      toast.error("Registration failed. Please try again.");
+    }
   };
 
   return (

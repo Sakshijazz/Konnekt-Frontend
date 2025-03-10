@@ -6,23 +6,33 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import axios from 'axios'; // Import axios for making HTTP requests
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // In a real app, you would validate and authenticate against a backend
+
     if (username.trim() && password.trim()) {
-      // Store user info in localStorage for this demo
-      localStorage.setItem("user", JSON.stringify({ username }));
-      localStorage.setItem("isAuthenticated", "true");
-      
-      toast.success("Login successful!");
-      navigate("/dashboard");
+      try {
+        // Send login data to the backend
+        const response = await axios.post('http://localhost:8080/api/auth/login', {
+          username,
+          password
+        });
+
+        if (response.status === 200) {
+          localStorage.setItem("user", JSON.stringify({ username }));
+          localStorage.setItem("isAuthenticated", "true");
+          toast.success("Login successful!");
+          navigate("/dashboard");
+        }
+      } catch (error) {
+        toast.error("Login failed. Please check your credentials.");
+      }
     } else {
       toast.error("Please enter both username and password");
     }
