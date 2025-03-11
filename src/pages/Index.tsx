@@ -178,14 +178,14 @@ const Index = () => {
                   className="bg-white text-indigo-600 hover:bg-indigo-100 font-bold py-3 px-6 rounded-full transition-all hover:shadow-lg"
                   onClick={() => navigate("/register")}
                 >
-                  Get Started
+                  Sign Up
                 </Button>
                 <Button
                   variant="outline"
                   className="bg-transparent border-white text-white hover:bg-white/20 font-bold py-3 px-6 rounded-full"
                   onClick={() => navigate("/login")}
                 >
-                  Login
+                  Sign In
                 </Button>
               </div>
             </div>
