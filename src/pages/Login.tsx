@@ -12,10 +12,9 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (username.trim() && password.trim()) {
       try {
         // Send login data to the backend
@@ -23,12 +22,15 @@ const Login = () => {
           username,
           password
         });
-
-        if (response.status === 200) {
-          localStorage.setItem("user", JSON.stringify({ username }));
-          localStorage.setItem("isAuthenticated", "true");
+  
+        if (response.status === 200 && response.data.token) {
+          // Store JWT token, username, and authentication status in localStorage
+          localStorage.setItem("jwtToken", response.data.token); // Store JWT token
+          localStorage.setItem("user", JSON.stringify({ username })); // Store username
+          localStorage.setItem("isAuthenticated", "true"); // Set authentication status
+  
           toast.success("Login successful!");
-          navigate("/dashboard");
+          navigate("/dashboard"); // Redirect to dashboard
         }
       } catch (error) {
         toast.error("Login failed. Please check your credentials.");
@@ -37,8 +39,7 @@ const Login = () => {
       toast.error("Please enter both username and password");
     }
   };
-
-  return (
+    return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <Card className="w-full max-w-md">
         <CardHeader>

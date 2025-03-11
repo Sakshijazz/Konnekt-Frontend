@@ -112,7 +112,7 @@ const Accounts = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center">
               <CreditCard className="mr-2 h-5 w-5 text-indigo-500" />
-              Your Bank Cards
+              Your Accounts
             </h2>
             <Button 
               variant="outline"
@@ -120,7 +120,7 @@ const Accounts = () => {
               onClick={() => navigate("/add-card")}
             >
               <PlusCircle size={16} />
-              Add Card
+              Add Account
             </Button>
           </div>
           
@@ -165,13 +165,13 @@ const Accounts = () => {
             {cards.length === 0 && (
               <div className="col-span-full flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl p-8 border border-dashed border-gray-300 shadow-sm">
                 <CreditCard className="h-12 w-12 text-indigo-400 mb-3" />
-                <p className="text-gray-500 mb-4">You don't have any bank cards yet</p>
+                <p className="text-gray-500 mb-4">You don't have any bank accounts yet</p>
                 <Button 
                   onClick={() => navigate("/add-card")}
                   className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700"
                 >
                   <PlusCircle size={16} />
-                  Add Your First Card
+                  Add Your First Account
                 </Button>
               </div>
             )}

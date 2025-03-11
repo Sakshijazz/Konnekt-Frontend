@@ -26,7 +26,7 @@ const DashboardNavbar = () => {
       <div className="flex flex-wrap justify-between items-center">
         <div className="flex items-center">
           <Link to="/dashboard" className="flex items-center">
-            <span className="self-center text-xl font-semibold whitespace-nowrap text-blue-600">Bankify</span>
+            <span className="self-center text-xl font-semibold whitespace-nowrap text-blue-600">Konnekt</span>
           </Link>
         </div>
         

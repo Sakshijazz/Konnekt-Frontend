@@ -1,4 +1,4 @@
-
+import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardNavbar from "@/components/DashboardNavbar";
@@ -13,7 +13,7 @@ import { toast } from "sonner";
 const cardTemplates = [
   { 
     id: 1, 
-    name: "SBI Card",
+    name: "SBI Account",
     type: "Visa",
     background: "linear-gradient(90deg, #1e3c72 0%, #2a5298 100%)",
     annualFee: "₹499",
@@ -23,7 +23,7 @@ const cardTemplates = [
   },
   { 
     id: 2, 
-    name: "HDFC Card",
+    name: "HDFC Account",
     type: "Mastercard",
     background: "linear-gradient(90deg, #000046 0%, #1CB5E0 100%)",
     annualFee: "₹599",
@@ -33,7 +33,7 @@ const cardTemplates = [
   },
   { 
     id: 3, 
-    name: "ICICI Card",
+    name: "ICICI Account",
     type: "Visa",
     background: "linear-gradient(90deg, #ED213A 0%, #93291E 100%)",
     annualFee: "₹549",
@@ -43,7 +43,7 @@ const cardTemplates = [
   },
   { 
     id: 4, 
-    name: "BOB Card",
+    name: "BOB Account",
     type: "Mastercard",
     background: "linear-gradient(90deg, #3A6073 0%, #16222A 100%)",
     annualFee: "₹399",
@@ -53,7 +53,7 @@ const cardTemplates = [
   },
   { 
     id: 5, 
-    name: "BOI Card",
+    name: "BOI Account",
     type: "Rupay",
     background: "linear-gradient(90deg, #4A00E0 0%, #8E2DE2 100%)",
     annualFee: "₹299",
@@ -82,7 +82,8 @@ const AddCard = () => {
     cardHolder: "",
     expiryMonth: "",
     expiryYear: "",
-    cvv: ""
+    cvv: "",
+    accountType: ""
   });
 
   const handleCardDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,38 +94,83 @@ const AddCard = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Perform validation (simplified)
-    if (!cardDetails.cardNumber || !cardDetails.cardHolder || 
-        !cardDetails.expiryMonth || !cardDetails.expiryYear || !cardDetails.cvv) {
-      toast.error("Please fill in all card details");
+  
+    const token = localStorage.getItem("jwtToken");
+    if (!token) {
+      toast.error("User not authenticated. Please log in again.");
       return;
     }
-
-    // Create a new card object to save
-    const newCard = {
-      id: Date.now(), // Simple way to generate a unique ID
-      type: selectedCard.name,
-      number: cardDetails.cardNumber.replace(/\d(?=\d{4})/g, "*"), // Mask all but last 4 digits
-      expiry: `${cardDetails.expiryMonth}/${cardDetails.expiryYear}`,
-      color: selectedCard.background,
-      bank: selectedCard.name.split(' ')[0] // Extract bank name (SBI, HDFC, etc.)
+  
+    const accountData = {
+      accountHolder: cardDetails.cardHolder,
+      accountNumber: cardDetails.cardNumber,
+      accountType: cardDetails.accountType
     };
-
-    // Get existing cards from localStorage or initialize an empty array
-    const existingCards = JSON.parse(localStorage.getItem("userCards") || "[]");
-    
-    // Add the new card to the array
-    const updatedCards = [...existingCards, newCard];
-    
-    // Save the updated cards array to localStorage
-    localStorage.setItem("userCards", JSON.stringify(updatedCards));
-
-    toast.success("Card added successfully!");
-    navigate("/dashboard");
+  
+    try {
+      const response = await axios.post("http://localhost:8080/api/accounts", accountData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      toast.success("Account created successfully!");
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error("Error creating account: " + error.message);
+    }
   };
+  
+
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+    
+  //   // Perform validation (simplified)
+  //   if (!cardDetails.cardNumber || !cardDetails.cardHolder ||  !cardDetails.accountType) {
+  //     toast.error("Please fill in all card details");
+  //     return;
+  //   }
+
+  //   // Create a new card object to save
+  //   const newCard = {
+  //     id: Date.now(), // Simple way to generate a unique ID
+  //     name: cardDetails.cardHolder,
+  //     type: cardDetails.accountType,
+  //     number: cardDetails.cardNumber.replace(/\d(?=\d{4})/g, "*"), // Mask all but last 4 digits
+      
+  //   };
+
+  //   try {
+  //     // Get the JWT token from localStorage (or sessionStorage, depending on where you store it)
+  //     const token = localStorage.getItem("jwtToken"); // Assuming the JWT is stored with this key
+  
+  //     if (!token) {
+  //       toast.error("User not authenticated. Please log in again.");
+  //       return;
+  //     }
+  
+  //     // Make API call to create the new account (card) on the backend with JWT authentication
+  //     const response = await axios.post("/api/accounts", newCard, {
+  //       headers: {
+  //         "Content-Type": "application/json", // Set content type if needed
+  //         "Authorization": `Bearer ${token}`, // Add the JWT token to the Authorization header
+  //       },
+  //     });
+  
+  //     // Check if the response is successful
+  //     if (response.status === 200) {
+  //       toast.success("Card added successfully!");
+  //       navigate("/dashboard");
+  //     } else {
+  //       toast.error("Failed to add the card. Please try again.");
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //     toast.error("Error occurred while adding the card.");
+  //   }
+  
+  // };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -202,7 +248,7 @@ const AddCard = () => {
                       setStep(2);
                     }}
                   >
-                    Select this card
+                    Add Account
                   </Button>
                 </CardFooter>
               </Card>
@@ -210,17 +256,29 @@ const AddCard = () => {
           </div>
         ) : (
           <div className="max-w-xl mx-auto">
+            
+            <form onSubmit={handleSubmit} className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Card Information</CardTitle>
+              <CardTitle>Account Information</CardTitle>
                 <CardDescription>
                   Please enter your {selectedCard.name} {selectedCard.type} details below
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="cardNumber">Card Number</Label>
+                    <Label htmlFor="cardHolder">Account Holder Name</Label>
+                    <Input 
+                      id="cardHolder"
+                      name="cardHolder"
+                      placeholder="JOHN DOE"
+                      value={cardDetails.cardHolder}
+                      onChange={handleCardDetailsChange}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="cardNumber">Account Number</Label>
                     <Input 
                       id="cardNumber"
                       name="cardNumber"
@@ -232,17 +290,43 @@ const AddCard = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="cardHolder">Card Holder Name</Label>
+                  <Label htmlFor="accountType">Account Type</Label>
+                  <select 
+                    id="accountType"
+                    name="accountType"
+                    value={cardDetails.accountType}
+                    onChange={(e) => setCardDetails(prev => ({ ...prev, accountType: e.target.value }))}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
+                    >
+                    <option value="">Select Account</option>
+                    <option value="Checking">Checking</option>
+                    <option value="Savings">Savings</option>
+                  </select>
+                </div>
+              </CardContent>
+
+              {/* <CardHeader>
+                <CardTitle>Card Information</CardTitle>
+                <CardDescription>
+                  Please enter your {selectedCard.name} {selectedCard.type} details below
+                </CardDescription>
+              </CardHeader> */}
+              <CardContent>
+                  {/* <div className="space-y-2">
+                    <Label htmlFor="cardNumber">Card Number</Label>
                     <Input 
-                      id="cardHolder"
-                      name="cardHolder"
-                      placeholder="JOHN DOE"
-                      value={cardDetails.cardHolder}
+                      id="cardNumber"
+                      name="cardNumber"
+                      placeholder="1234 5678 9012 3456"
+                      value={cardDetails.cardNumber}
                       onChange={handleCardDetailsChange}
+                      maxLength={19}
                     />
-                  </div>
+                  </div> */}
                   
-                  <div className="grid grid-cols-3 gap-4">
+                  
+                  
+                  {/* <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="expiryMonth">Month</Label>
                       <Input 
@@ -277,10 +361,10 @@ const AddCard = () => {
                         type="password"
                       />
                     </div>
-                  </div>
+                  </div> */}
                   
                   <div 
-                    className="w-full aspect-[16/9] rounded-lg mb-4 p-4 flex flex-col justify-between"
+                    className="w-full aspect-[16/9] rounded-lg mt-4 mb-4 p-4 flex flex-col justify-between"
                     style={{ background: selectedCard.background }}
                   >
                     <div className="flex justify-between items-start">
@@ -314,10 +398,11 @@ const AddCard = () => {
                     </div>
                   </div>
                   
-                  <Button type="submit" className="w-full">Add Card</Button>
-                </form>
+                  <Button type="submit" className="w-full">Add Account</Button>
+                
               </CardContent>
             </Card>
+            </form>
           </div>
         )}
       </div>

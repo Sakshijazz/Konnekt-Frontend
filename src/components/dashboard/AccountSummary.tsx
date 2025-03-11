@@ -118,32 +118,34 @@ const AccountSummary = ({ accounts }: AccountSummaryProps) => {
             <CardDescription className="font-mono">{account.number}</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-indigo-700">${account.balance.toFixed(2)}</div>
-            <p className="text-xs text-gray-500 mt-1">Available Balance</p>
-            
-            {/* Action buttons for each account */}
-            <div className="grid grid-cols-3 gap-2 mt-4">
-              <Button className="bg-green-50 text-green-700 hover:bg-green-100 border border-green-200" variant="outline" onClick={() => navigate("/deposit")}>
-                <ArrowDownLeft className="h-4 w-4 mr-2" />
-                Deposit
-              </Button>
-              <Button className="bg-red-50 text-red-700 hover:bg-red-100 border border-red-200" variant="outline" onClick={() => navigate("/withdraw")}>
-                <ArrowUpRight className="h-4 w-4 mr-2" />
-                Withdraw
-              </Button>
-              <Button 
-                className="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200" 
-                variant="outline" 
-                onClick={() => {
-                  setFromAccount(account.id.toString());
-                  setIsTransferOpen(true);
-                }}
-              >
-                <ArrowLeftRight className="h-4 w-4 mr-2" />
-                Transfer
-              </Button>
-            </div>
-          </CardContent>
+          <div className="text-2xl font-bold text-indigo-700">${account.balance.toFixed(2)}</div>
+  <p className="text-xs text-gray-500 mt-1">Available Balance</p>
+  
+  {/* Action buttons for each account */}
+  <div className="grid grid-cols-2 gap-2 mt-4">
+    <Button className="bg-green-50 text-green-700 hover:bg-green-100 border border-green-200" variant="outline" onClick={() => navigate("/deposit")}>
+      <ArrowDownLeft className="h-4 w-4 mr-2" />
+      Deposit
+    </Button>
+    <Button className="bg-red-50 text-red-700 hover:bg-red-100 border border-red-200" variant="outline" onClick={() => navigate("/withdraw")}>
+      <ArrowUpRight className="h-4 w-4 mr-2" />
+      Withdraw
+    </Button>
+  </div>
+  <div className="mt-2">
+    <Button 
+      className="bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 w-full" 
+      variant="outline" 
+      onClick={() => {
+        setFromAccount(account.id.toString());
+        setIsTransferOpen(true);
+      }}
+    >
+      <ArrowLeftRight className="h-4 w-4 mr-2" />
+      Transfer Between Accounts
+    </Button>
+  </div>
+</CardContent>
         </Card>
       ))}
 
