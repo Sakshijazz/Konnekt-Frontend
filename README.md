@@ -1,4 +1,4 @@
- # Legacy Bank API
+# Legacy Bank API
 
 A RESTful API for a banking application with user authentication, account management, transaction processing, card management, and user settings.
 
@@ -55,13 +55,16 @@ mvn spring-boot:run
 - **Method**: POST
 - **Auth required**: No
 - **Payload**:
+
 ```json
 {
   "username": "string",
   "password": "string"
 }
 ```
+
 - **Success Response**:
+
 ```json
 {
   "token": "JWT_TOKEN",
@@ -69,7 +72,9 @@ mvn spring-boot:run
   "username": "string"
 }
 ```
+
 - **Error Response**:
+
 ```json
 {
   "error": "Invalid username or password"
@@ -82,6 +87,7 @@ mvn spring-boot:run
 - **Method**: POST
 - **Auth required**: No
 - **Payload**:
+
 ```json
 {
   "username": "string",
@@ -91,7 +97,9 @@ mvn spring-boot:run
   "lastName": "string"
 }
 ```
+
 - **Success Response**:
+
 ```json
 {
   "message": "User registered successfully",
@@ -99,7 +107,9 @@ mvn spring-boot:run
   "username": "string"
 }
 ```
+
 - **Error Response**:
+
 ```json
 {
   "error": "Username is already taken"
@@ -112,6 +122,7 @@ mvn spring-boot:run
 - **Method**: POST
 - **Auth required**: Yes (JWT)
 - **Success Response**:
+
 ```json
 {
   "message": "Logged out successfully"
@@ -126,12 +137,13 @@ mvn spring-boot:run
 - **Method**: GET
 - **Auth required**: Yes (JWT)
 - **Success Response**:
+
 ```json
 [
   {
     "id": 1,
     "accountType": "SAVINGS",
-    "balance": 1000.50,
+    "balance": 1000.5,
     "currency": "USD",
     "status": "ACTIVE",
     "createdAt": "2023-01-01T12:00:00",
@@ -146,18 +158,21 @@ mvn spring-boot:run
 - **Method**: GET
 - **Auth required**: Yes (JWT)
 - **Success Response**:
+
 ```json
 {
   "id": 1,
   "accountType": "SAVINGS",
-  "balance": 1000.50,
+  "balance": 1000.5,
   "currency": "USD",
   "status": "ACTIVE",
   "createdAt": "2023-01-01T12:00:00",
   "accountNumber": "ACC12345678"
 }
 ```
+
 - **Error Response**:
+
 ```json
 {
   "error": "Account not found"
@@ -170,25 +185,30 @@ mvn spring-boot:run
 - **Method**: POST
 - **Auth required**: Yes (JWT)
 - **Payload**:
+
 ```json
 {
   "accountType": "SAVINGS",
   "currency": "USD"
 }
 ```
+
 - **Success Response**:
+
 ```json
 {
   "id": 1,
   "accountType": "SAVINGS",
-  "balance": 0.00,
+  "balance": 0.0,
   "currency": "USD",
   "status": "ACTIVE",
   "createdAt": "2023-01-01T12:00:00",
   "accountNumber": "ACC12345678"
 }
 ```
+
 - **Error Response**:
+
 ```json
 {
   "error": "Invalid account type"
@@ -203,28 +223,33 @@ mvn spring-boot:run
 - **Method**: POST
 - **Auth required**: Yes (JWT)
 - **Payload**:
+
 ```json
 {
   "accountId": 1,
-  "amount": 100.50,
+  "amount": 100.5,
   "description": "Salary deposit"
 }
 ```
+
 - **Success Response**:
+
 ```json
 {
   "message": "Deposit successful",
   "transaction": {
     "id": 1,
     "type": "DEPOSIT",
-    "amount": 100.50,
+    "amount": 100.5,
     "timestamp": "2023-01-01T12:00:00",
     "status": "COMPLETED",
     "description": "Salary deposit"
   }
 }
 ```
+
 - **Error Response**:
+
 ```json
 {
   "error": "Deposit amount must be positive"
@@ -237,6 +262,7 @@ mvn spring-boot:run
 - **Method**: POST
 - **Auth required**: Yes (JWT)
 - **Payload**:
+
 ```json
 {
   "accountId": 1,
@@ -244,7 +270,9 @@ mvn spring-boot:run
   "description": "ATM withdrawal"
 }
 ```
+
 - **Success Response**:
+
 ```json
 {
   "message": "Withdrawal successful",
@@ -258,7 +286,9 @@ mvn spring-boot:run
   }
 }
 ```
+
 - **Error Response**:
+
 ```json
 {
   "error": "Insufficient funds"
@@ -271,22 +301,25 @@ mvn spring-boot:run
 - **Method**: POST
 - **Auth required**: Yes (JWT)
 - **Payload**:
+
 ```json
 {
   "fromAccountId": 1,
   "toAccountId": 2,
-  "amount": 200.00,
+  "amount": 200.0,
   "description": "Rent payment"
 }
 ```
+
 - **Success Response**:
+
 ```json
 {
   "message": "Transfer successful",
   "transaction": {
     "id": 1,
     "type": "TRANSFER",
-    "amount": 200.00,
+    "amount": 200.0,
     "fromAccount": { "id": 1 },
     "toAccount": { "id": 2 },
     "timestamp": "2023-01-01T12:00:00",
@@ -295,7 +328,9 @@ mvn spring-boot:run
   }
 }
 ```
+
 - **Error Response**:
+
 ```json
 {
   "error": "Insufficient funds in source account"
@@ -314,13 +349,14 @@ mvn spring-boot:run
   - `page` (optional): Page number
   - `size` (optional): Page size
 - **Success Response**:
+
 ```json
 {
   "content": [
     {
       "id": 1,
       "type": "DEPOSIT",
-      "amount": 100.50,
+      "amount": 100.5,
       "timestamp": "2023-01-01T12:00:00",
       "status": "COMPLETED",
       "description": "Salary deposit"
@@ -343,6 +379,7 @@ mvn spring-boot:run
 - **Method**: GET
 - **Auth required**: Yes (JWT)
 - **Success Response**:
+
 ```json
 [
   {
@@ -362,13 +399,16 @@ mvn spring-boot:run
 - **Method**: POST
 - **Auth required**: Yes (JWT)
 - **Payload**:
+
 ```json
 {
   "cardType": "VISA",
   "accountId": 1
 }
 ```
+
 - **Success Response**:
+
 ```json
 {
   "id": 1,
@@ -379,7 +419,9 @@ mvn spring-boot:run
   "status": "ACTIVE"
 }
 ```
+
 - **Error Response**:
+
 ```json
 {
   "error": "Account not found"
@@ -392,12 +434,15 @@ mvn spring-boot:run
 - **Method**: DELETE
 - **Auth required**: Yes (JWT)
 - **Success Response**:
+
 ```json
 {
   "message": "Card successfully deleted"
 }
 ```
+
 - **Error Response**:
+
 ```json
 {
   "error": "Card not found"
@@ -412,6 +457,7 @@ mvn spring-boot:run
 - **Method**: GET
 - **Auth required**: Yes (JWT)
 - **Success Response**:
+
 ```json
 {
   "id": 1,
@@ -433,13 +479,16 @@ mvn spring-boot:run
 - **Method**: PUT
 - **Auth required**: Yes (JWT)
 - **Payload**:
+
 ```json
 {
   "twoFactor": true,
   "loginNotifications": true
 }
 ```
+
 - **Success Response**:
+
 ```json
 {
   "id": 1,
@@ -461,6 +510,7 @@ mvn spring-boot:run
 - **Method**: PUT
 - **Auth required**: Yes (JWT)
 - **Payload**:
+
 ```json
 {
   "emailNotifications": true,
@@ -469,7 +519,9 @@ mvn spring-boot:run
   "marketingNotifications": false
 }
 ```
+
 - **Success Response**:
+
 ```json
 {
   "id": 1,
@@ -491,6 +543,7 @@ mvn spring-boot:run
 - **Method**: PUT
 - **Auth required**: Yes (JWT)
 - **Payload**:
+
 ```json
 {
   "showBalance": true,
@@ -498,7 +551,9 @@ mvn spring-boot:run
   "dataSharing": false
 }
 ```
+
 - **Success Response**:
+
 ```json
 {
   "id": 1,
@@ -511,6 +566,124 @@ mvn spring-boot:run
   "showBalance": true,
   "activityTracking": false,
   "dataSharing": false
+}
+```
+
+### Users
+
+#### Get All Users
+
+- **URL**: `/api/users`
+- **Method**: GET
+- **Auth required**: Yes (JWT)
+- **Success Response**:
+
+```json
+[
+  {
+    "id": 1,
+    "username": "johndoe",
+    "email": "john@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "phone": "+1234567890",
+    "profileImage": "profile.jpg",
+    "accounts": [
+      {
+        "id": 1,
+        "accountType": "SAVINGS",
+        "accountNumber": "ACC12345678",
+        "balance": 1000.5
+      }
+    ]
+  }
+]
+```
+
+#### Get User by ID
+
+- **URL**: `/api/users/{id}`
+- **Method**: GET
+- **Auth required**: Yes (JWT)
+- **Success Response**:
+
+```json
+{
+  "id": 1,
+  "username": "johndoe",
+  "email": "john@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "phone": "+1234567890",
+  "profileImage": "profile.jpg",
+  "accounts": [
+    {
+      "id": 1,
+      "accountType": "SAVINGS",
+      "accountNumber": "ACC12345678",
+      "balance": 1000.5
+    }
+  ]
+}
+```
+
+- **Error Response**:
+
+```json
+{
+  "error": "User not found"
+}
+```
+
+#### Update User
+
+- **URL**: `/api/users/{id}`
+- **Method**: PUT
+- **Auth required**: Yes (JWT)
+- **Payload**:
+
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "phone": "+1234567890",
+  "profileImage": "profile.jpg"
+}
+```
+
+- **Success Response**:
+
+```json
+{
+  "id": 1,
+  "username": "johndoe",
+  "email": "john@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "phone": "+1234567890",
+  "profileImage": "profile.jpg"
+}
+```
+
+- **Error Response**:
+
+```json
+{
+  "error": "User not found"
+}
+```
+
+#### Delete User
+
+- **URL**: `/api/users/{id}`
+- **Method**: DELETE
+- **Auth required**: Yes (JWT)
+- **Success Response**: 204 No Content
+- **Error Response**:
+
+```json
+{
+  "error": "User not found"
 }
 ```
 

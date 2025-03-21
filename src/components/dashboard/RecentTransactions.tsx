@@ -1,66 +1,99 @@
-
 import React from "react";
-import { BarChart4 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight } from "lucide-react";
 
 interface Transaction {
   id: number;
-  date: string;
-  description: string;
+  type: "DEPOSIT" | "WITHDRAWAL" | "TRANSFER";
   amount: number;
+  date: string;
+  status: string;
+  description: string;
+  formattedAmount: string;
+  formattedDescription: string;
 }
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
 }
 
-const RecentTransactions = ({ transactions }: RecentTransactionsProps) => {
-  const navigate = useNavigate();
+const RecentTransactions: React.FC<RecentTransactionsProps> = ({
+  transactions,
+}) => {
+  const getTransactionIcon = (type: string) => {
+    switch (type) {
+      case "DEPOSIT":
+        return <ArrowDownLeft className="h-4 w-4 text-green-600" />;
+      case "WITHDRAWAL":
+        return <ArrowUpRight className="h-4 w-4 text-red-600" />;
+      case "TRANSFER":
+        return <ArrowLeftRight className="h-4 w-4 text-blue-600" />;
+      default:
+        return null;
+    }
+  };
+
+  const getTransactionColor = (type: string) => {
+    switch (type) {
+      case "DEPOSIT":
+        return "text-green-600";
+      case "WITHDRAWAL":
+        return "text-red-600";
+      case "TRANSFER":
+        return "text-blue-600";
+      default:
+        return "text-gray-600";
+    }
+  };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-          <BarChart4 className="mr-2 h-5 w-5 text-indigo-500" />
-          Recent Transactions
-        </h2>
-        <Button variant="link" className="text-indigo-600 hover:text-indigo-800" onClick={() => navigate("/transactions")}>View All</Button>
-      </div>
-      
-      <Card className="border-gray-200 shadow-md overflow-hidden backdrop-blur-sm bg-white/80">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left text-gray-500">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50/80 border-b border-gray-200">
-                <tr>
-                  <th scope="col" className="px-6 py-3">Date</th>
-                  <th scope="col" className="px-6 py-3">Description</th>
-                  <th scope="col" className="px-6 py-3">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.slice(0, 5).map((transaction) => (
-                  <tr key={transaction.id} className="bg-white/50 border-b hover:bg-gray-50/80 transition-colors">
-                    <td className="px-6 py-4">{transaction.date}</td>
-                    <td className="px-6 py-4">{transaction.description}</td>
-                    <td className={`px-6 py-4 font-medium ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {transaction.amount > 0 ? '+' : ''}{parseFloat(transaction.amount.toString()).toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
-                {transactions.length === 0 && (
-                  <tr className="bg-white/50 border-b">
-                    <td colSpan={3} className="px-6 py-4 text-center">No recent transactions</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="bg-white/80 backdrop-blur-sm">
+      <CardHeader>
+        <CardTitle>Recent Transactions</CardTitle>
+        <CardDescription>Your latest account activity</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {transactions.length === 0 ? (
+            <div className="text-center py-4 text-gray-500">
+              No recent transactions
+            </div>
+          ) : (
+            transactions.reverse().map((transaction) => (
+              <div
+                key={transaction.id}
+                className="flex items-center justify-between p-4 rounded-lg bg-white/50 hover:bg-white/80 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-gray-100">
+                    {getTransactionIcon(transaction.type)}
+                  </div>
+                  <div>
+                    <p className="font-medium">
+                      {transaction.formattedDescription}
+                    </p>
+                    <p className="text-sm text-gray-500">{transaction.date}</p>
+                  </div>
+                </div>
+                <div
+                  className={`font-medium ${getTransactionColor(
+                    transaction.type
+                  )}`}
+                >
+                  {transaction.formattedAmount}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

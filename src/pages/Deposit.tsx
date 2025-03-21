@@ -1,111 +1,170 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { ArrowDownLeft } from "lucide-react";
-import { Account, Card as CardType, loadAccounts, createCardAccounts } from "@/utils/accountUtils";
-import TransactionLayout from "@/components/transactions/TransactionLayout";
-import TransactionForm from "@/components/transactions/TransactionForm";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { accountService } from "@/services/account";
+import { transactionService } from "@/services/transaction";
+import DashboardNavbar from "@/components/DashboardNavbar";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
+import { toast } from "@/components/ui/use-toast";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const Deposit = () => {
   const navigate = useNavigate();
-  const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
-  const [cards, setCards] = useState<CardType[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
+  const queryClient = useQueryClient();
   const [selectedAccount, setSelectedAccount] = useState("");
-  
-  // Check if user is authenticated and load data
-  useEffect(() => {
-    const isAuthenticated = localStorage.getItem("isAuthenticated");
-    if (!isAuthenticated) {
-      navigate("/login");
+  const [amount, setAmount] = useState("");
+  const [description, setDescription] = useState("");
+
+  // Fetch accounts for the select dropdown
+  const { data: accounts = [] } = useQuery({
+    queryKey: ["accounts"],
+    queryFn: accountService.getAllAccounts,
+  });
+
+  // Create deposit mutation
+  const depositMutation = useMutation({
+    mutationFn: ({
+      accountId,
+      amount,
+      description,
+    }: {
+      accountId: number;
+      amount: number;
+      description: string;
+    }) => transactionService.deposit(accountId, amount, description),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      toast({
+        title: "Success",
+        description: "Deposit completed successfully",
+      });
+      navigate("/dashboard");
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to make deposit. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!selectedAccount || !amount) {
+      toast({
+        title: "Error",
+        description: "Please select an account and enter an amount",
+        variant: "destructive",
+      });
       return;
     }
 
-    // Load cards from localStorage
-    const savedCards = localStorage.getItem("userCards");
-    if (savedCards) {
-      const parsedCards = JSON.parse(savedCards);
-      setCards(parsedCards);
-    }
-    
-    // Load accounts
-    const initialAccounts = loadAccounts(null);
-    setAccounts(initialAccounts);
-    
-    // Set default selected account
-    if (initialAccounts.length > 0) {
-      setSelectedAccount(initialAccounts[0].id.toString());
-    }
-  }, [navigate]);
-
-  // Handle card selection
-  const handleCardChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const cardId = Number(e.target.value);
-    
-    if (cardId === 0) {
-      // No card selected
-      setSelectedCard(null);
-      const defaultAccounts = loadAccounts(null);
-      setAccounts(defaultAccounts);
-      if (defaultAccounts.length > 0) {
-        setSelectedAccount(defaultAccounts[0].id.toString());
-      }
+    const depositAmount = parseFloat(amount);
+    if (isNaN(depositAmount) || depositAmount <= 0) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid positive amount",
+        variant: "destructive",
+      });
       return;
     }
-    
-    const card = cards.find(c => c.id === cardId);
-    if (!card) return;
-    
-    setSelectedCard(card);
-    
-    // Get all card accounts from localStorage
-    const allCardAccounts = JSON.parse(localStorage.getItem("allCardAccounts") || "{}");
-    
-    // Check if there are existing accounts for this card
-    if (allCardAccounts[card.id]) {
-      // Use existing accounts
-      setAccounts(allCardAccounts[card.id]);
-      if (allCardAccounts[card.id].length > 0) {
-        setSelectedAccount(allCardAccounts[card.id][0].id.toString());
-      }
-    } else {
-      // Generate new accounts for this card
-      const cardAccounts = createCardAccounts(card);
-      
-      // Save to allCardAccounts for persistence
-      allCardAccounts[card.id] = cardAccounts;
-      localStorage.setItem("allCardAccounts", JSON.stringify(allCardAccounts));
-      
-      // Update state
-      setAccounts(cardAccounts);
-      setSelectedAccount(cardAccounts[0].id.toString());
-    }
-    
-    // Update selectedCardAccounts for the current session
-    localStorage.setItem("selectedCardAccounts", JSON.stringify(allCardAccounts[card.id] || []));
+
+    depositMutation.mutate({
+      accountId: parseInt(selectedAccount),
+      amount: depositAmount,
+      description: description || "Deposit",
+    });
   };
 
   return (
-    <TransactionLayout
-      icon={<ArrowDownLeft />}
-      title="Deposit Funds"
-      description="Add money to your account"
-      iconColor="text-green-600"
-    >
-      <TransactionForm
-        transactionType="deposit"
-        accounts={accounts}
-        selectedAccount={selectedAccount}
-        setSelectedAccount={setSelectedAccount}
-        selectedCard={selectedCard}
-        cards={cards}
-        onCardChange={handleCardChange}
-        icon={<ArrowDownLeft className="h-4 w-4 mr-2" />}
-        buttonColor="bg-green-600 hover:bg-green-700"
-        buttonText="Deposit Funds"
-      />
-    </TransactionLayout>
+    <div className="min-h-screen relative bg-gradient-to-b from-gray-50 to-gray-100">
+      <AnimatedBackground />
+      <DashboardNavbar />
+
+      <div className="pt-20 pb-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
+        <Card className="max-w-md mx-auto bg-white/80 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle>Make a Deposit</CardTitle>
+            <CardDescription>Deposit money into your account</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Select Account</label>
+                <Select
+                  value={selectedAccount}
+                  onValueChange={setSelectedAccount}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an account" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accounts.map((account) => (
+                      <SelectItem
+                        key={account.id}
+                        value={account.id.toString()}
+                      >
+                        {account.accountType} - {account.accountNumber}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Amount</label>
+                <Input
+                  type="number"
+                  placeholder="Enter amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Description (Optional)
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Enter description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={depositMutation.isPending}
+              >
+                {depositMutation.isPending ? "Processing..." : "Make Deposit"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
 

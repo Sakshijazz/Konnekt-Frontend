@@ -1,14 +1,15 @@
 import api from "./api";
+import type { Account } from "./account";
 
 export interface Transaction {
   id: number;
   type: "DEPOSIT" | "WITHDRAWAL" | "TRANSFER";
   amount: number;
+  fromAccount?: Account;
+  toAccount?: Account;
+  status: "COMPLETED" | "PENDING" | "FAILED";
   timestamp: string;
-  status: string;
-  description: string;
-  fromAccount?: { id: number };
-  toAccount?: { id: number };
+  description?: string;
 }
 
 export interface TransactionRequest {
@@ -20,37 +21,69 @@ export interface TransactionRequest {
 }
 
 export interface TransactionHistoryParams {
-  accountId?: number;
-  type?: string;
-  status?: string;
   page?: number;
   size?: number;
+  accountId?: number;
+  type?: "DEPOSIT" | "WITHDRAWAL" | "TRANSFER";
+  status?: "COMPLETED" | "PENDING" | "FAILED";
+}
+
+export interface TransactionHistoryResponse {
+  content: Transaction[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
 export const transactionService = {
-  deposit: async (data: TransactionRequest) => {
-    const response = await api.post<Transaction>("/transactions/deposit", data);
-    return response.data;
-  },
-
-  withdraw: async (data: TransactionRequest) => {
-    const response = await api.post<Transaction>(
-      "/transactions/withdraw",
-      data
-    );
-    return response.data;
-  },
-
-  transfer: async (data: TransactionRequest) => {
-    const response = await api.post<Transaction>(
-      "/transactions/transfer",
-      data
-    );
-    return response.data;
-  },
-
-  getHistory: async (params: TransactionHistoryParams) => {
+  getTransactionHistory: async (
+    params: TransactionHistoryParams = {}
+  ): Promise<TransactionHistoryResponse> => {
     const response = await api.get("/transactions/history", { params });
+    return response.data;
+  },
+
+  deposit: async (
+    accountId: number,
+    amount: number,
+    description?: string
+  ): Promise<Transaction> => {
+    const response = await api.post("/transactions/deposit", {
+      accountId,
+      amount,
+      description,
+    });
+    return response.data;
+  },
+
+  withdraw: async (
+    accountId: number,
+    amount: number,
+    description?: string
+  ): Promise<Transaction> => {
+    const response = await api.post("/transactions/withdraw", {
+      accountId,
+      amount,
+      description,
+    });
+    return response.data;
+  },
+
+  transfer: async (
+    fromAccountId: number,
+    toAccountId: number,
+    amount: number,
+    description?: string
+  ): Promise<Transaction> => {
+    const response = await api.post("/transactions/transfer", {
+      fromAccountId,
+      toAccountId,
+      amount,
+      description,
+    });
     return response.data;
   },
 };

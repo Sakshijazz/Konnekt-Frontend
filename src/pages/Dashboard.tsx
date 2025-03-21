@@ -1,134 +1,193 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import DashboardNavbar from "@/components/DashboardNavbar";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import QuickActions from "@/components/dashboard/QuickActions";
 import CardList from "@/components/dashboard/CardList";
 import AccountSummary from "@/components/dashboard/AccountSummary";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
+import { accountService } from "@/services/account";
+import { cardService, type Card as APICard } from "@/services/card";
+import {
+  transactionService,
+  type Transaction as APITransaction,
+} from "@/services/transaction";
+import { toast } from "@/components/ui/use-toast";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  CreditCard,
+  PlusCircle,
+  ArrowUpRight,
+  ArrowDownLeft,
+  ArrowLeftRight,
+  Wallet,
+} from "lucide-react";
 
-// Default accounts data with zero balances for new users
-const defaultAccountsData = [
-  { id: 1, type: "Checking", number: "**** 1234", balance: 0 },
-  { id: 2, type: "Savings", number: "**** 5678", balance: 0 },
-];
+// Define interfaces to match component expectations
+interface DashboardCard extends APICard {
+  number: string;
+  expiry: string;
+  color: string;
+}
+
+interface DashboardAccount {
+  id: number;
+  type: string;
+  number: string;
+  balance: number;
+}
+
+interface DashboardTransaction extends APITransaction {
+  date: string;
+  formattedAmount: string;
+  formattedDescription: string;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [cards, setCards] = useState([]);
-  const [accounts, setAccounts] = useState(defaultAccountsData);
-  const [transactions, setTransactions] = useState([]);
-  const [selectedCard, setSelectedCard] = useState(null);
+  const [selectedCard, setSelectedCard] = useState<DashboardCard | null>(null);
+  const queryClient = useQueryClient();
 
-  // Check if user is authenticated and load data
+  // Get current user from localStorage
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const username = user.username || "User";
+
+  // Fetch accounts data
+  const { data: apiAccounts = [], isError: isAccountsError } = useQuery({
+    queryKey: ["accounts"],
+    queryFn: accountService.getAllAccounts,
+  });
+
+  // Transform API accounts to match dashboard format
+  const accounts: DashboardAccount[] = apiAccounts.map((account) => ({
+    id: account.id,
+    type: account.accountType,
+    number: account.accountNumber,
+    balance: account.balance,
+  }));
+
+  // Fetch cards data
+  const { data: apiCards = [], isError: isCardsError } = useQuery({
+    queryKey: ["cards"],
+    queryFn: cardService.getAllCards,
+  });
+
+  // Transform API cards to match dashboard format
+  const cards: DashboardCard[] = apiCards.map((card) => ({
+    ...card,
+    number: card.cardNumber,
+    expiry: card.expiryDate,
+    color: card.cardType === "VISA" ? "blue" : "green",
+  }));
+
+  // Fetch recent transactions
+  const {
+    data: transactionHistory = { content: [] },
+    isError: isTransactionsError,
+  } = useQuery({
+    queryKey: ["transactions"],
+    queryFn: () =>
+      transactionService.getTransactionHistory({ page: 0, size: 5 }),
+  });
+
+  // Filter and transform transactions for the current user
+  const transactions: DashboardTransaction[] = transactionHistory.content
+    .filter((transaction) => {
+      const fromAccountUserName = transaction.fromAccount?.user?.username;
+      const toAccountUserName = transaction.toAccount?.user?.username;
+      return fromAccountUserName === username || toAccountUserName === username;
+    })
+    .map((transaction) => {
+      const isOutgoing = transaction.fromAccount?.user?.username === username;
+      const otherParty = isOutgoing
+        ? transaction.toAccount?.user?.username || "Unknown"
+        : transaction.fromAccount?.user?.username || "Unknown";
+
+      let formattedDescription = transaction.description || "";
+      let formattedAmount = "";
+
+      switch (transaction.type) {
+        case "DEPOSIT":
+          formattedAmount = `+$${transaction.amount.toFixed(2)}`;
+          formattedDescription = `Deposit to ${transaction.toAccount?.accountNumber}`;
+          break;
+        case "WITHDRAWAL":
+          formattedAmount = `-$${transaction.amount.toFixed(2)}`;
+          formattedDescription = `Withdrawal from ${transaction.fromAccount?.accountNumber}`;
+          break;
+        case "TRANSFER":
+          if (isOutgoing) {
+            formattedAmount = `-$${transaction.amount.toFixed(2)}`;
+            formattedDescription = `Transfer to ${otherParty} (${transaction.toAccount?.accountNumber})`;
+          } else {
+            formattedAmount = `+$${transaction.amount.toFixed(2)}`;
+            formattedDescription = `Transfer from ${otherParty} (${transaction.fromAccount?.accountNumber})`;
+          }
+          break;
+      }
+
+      return {
+        ...transaction,
+        date: new Date(transaction.timestamp).toLocaleDateString(),
+        formattedAmount,
+        formattedDescription,
+      };
+    });
+
+  // Check authentication
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (!isAuthenticated) {
       navigate("/login");
-      return;
-    }
-
-    // Load cards from localStorage if available
-    const savedCards = localStorage.getItem("userCards");
-    if (savedCards) {
-      setCards(JSON.parse(savedCards));
-    }
-
-    // Load accounts from localStorage if available
-    const savedAccounts = localStorage.getItem("userAccounts");
-    if (savedAccounts) {
-      setAccounts(JSON.parse(savedAccounts));
-    } else {
-      // If no accounts in localStorage, initialize with the default data (zero balances)
-      localStorage.setItem("userAccounts", JSON.stringify(defaultAccountsData));
-    }
-
-    // Load transactions from localStorage if available
-    const savedTransactions = localStorage.getItem("userTransactions");
-    if (savedTransactions) {
-      setTransactions(JSON.parse(savedTransactions));
-    }
-
-    // Check for selected card accounts
-    const selectedCardAccounts = localStorage.getItem("selectedCardAccounts");
-    if (selectedCardAccounts) {
-      setAccounts(JSON.parse(selectedCardAccounts));
     }
   }, [navigate]);
 
-  // Get username from localStorage
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const username = user.username || "User";
-
-  // Generate random balance for demo purposes
-  const generateRandomBalance = () => {
-    return Math.floor(Math.random() * 10000) / 100;
-  };
-
   // Handle card selection
-  const handleCardClick = (card) => {
+  const handleCardClick = (card: DashboardCard) => {
     setSelectedCard(card);
-
-    // Extract last 4 digits of the card number
-    const lastFourDigits = card.number.slice(-4);
-
-    // Get existing card accounts or create new ones with random balances
-    const existingAccounts = JSON.parse(
-      localStorage.getItem("allCardAccounts") || "{}"
-    );
-
-    let cardAccounts;
-    if (existingAccounts[card.id]) {
-      cardAccounts = existingAccounts[card.id];
-    } else {
-      cardAccounts = [
-        {
-          id: card.id * 100 + 1,
-          type: "Checking",
-          number: `**** ${lastFourDigits}`,
-          balance: generateRandomBalance(),
-          cardId: card.id,
-        },
-        {
-          id: card.id * 100 + 2,
-          type: "Savings",
-          number: `**** ${lastFourDigits}`,
-          balance: generateRandomBalance(),
-          cardId: card.id,
-        },
-      ];
-
-      // Store in all accounts
-      existingAccounts[card.id] = cardAccounts;
-      localStorage.setItem("allCardAccounts", JSON.stringify(existingAccounts));
-    }
-
-    localStorage.setItem("selectedCardAccounts", JSON.stringify(cardAccounts));
-    setAccounts(cardAccounts);
   };
 
-  const handleRemoveCard = (e, cardId) => {
-    e.stopPropagation(); // Prevent triggering card click
+  // Handle card removal
+  const handleRemoveCard = async (e: React.MouseEvent, cardId: number) => {
+    e.stopPropagation();
 
-    // Remove card from cards list
-    const updatedCards = cards.filter((card) => card.id !== cardId);
-    setCards(updatedCards);
-    localStorage.setItem("userCards", JSON.stringify(updatedCards));
+    try {
+      await cardService.deleteCard(cardId);
+      queryClient.invalidateQueries({ queryKey: ["cards"] });
+      toast({
+        title: "Success",
+        description: "Card removed successfully",
+      });
 
-    // Remove associated accounts
-    const allAccounts = JSON.parse(
-      localStorage.getItem("allCardAccounts") || "{}"
-    );
-    delete allAccounts[cardId];
-    localStorage.setItem("allCardAccounts", JSON.stringify(allAccounts));
-
-    // Clear selected card if it was the one deleted
-    if (selectedCard && selectedCard.id === cardId) {
-      setSelectedCard(null);
-      setAccounts(defaultAccountsData);
-      localStorage.removeItem("selectedCardAccounts");
+      if (selectedCard && selectedCard.id === cardId) {
+        setSelectedCard(null);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to remove card. Please try again later.",
+        variant: "destructive",
+      });
     }
   };
+
+  if (isAccountsError || isCardsError || isTransactionsError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500">
+          Something went wrong. Please refresh the page.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative bg-gradient-to-b from-gray-50 to-gray-100 overflow-hidden">
@@ -148,25 +207,161 @@ const Dashboard = () => {
         <QuickActions />
 
         {/* Cards section */}
-        <CardList
+        {/* <CardList
           cards={cards}
           selectedCard={selectedCard}
           username={username}
           onCardClick={handleCardClick}
           onRemoveCard={handleRemoveCard}
-        />
+        /> */}
 
         {/* Accounts overview */}
-        <AccountSummary accounts={accounts} />
+        {/* <AccountSummary accounts={accounts} /> */}
+
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+              <CreditCard className="mr-2 h-5 w-5 text-indigo-500" />
+              Your Cards
+            </h2>
+            {cards.length > 0 && (
+              <Button
+                variant="outline"
+                className="flex items-center gap-2 rounded-full bg-white shadow-sm hover:shadow-md transition-all"
+                onClick={() => navigate("/add-card")}
+              >
+                <PlusCircle size={16} />
+                Add Card
+              </Button>
+            )}
+          </div>
+
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {cards.map((card) => (
+              <div
+                key={card.id}
+                className="rounded-xl p-6 text-white shadow-lg transform transition-all hover:scale-105 cursor-pointer relative group"
+                style={{
+                  background:
+                    card.color === "blue"
+                      ? "linear-gradient(90deg, #1e3c72 0%, #2a5298 100%)"
+                      : "linear-gradient(90deg, #000046 0%, #1CB5E0 100%)",
+                }}
+              >
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <p className="text-sm opacity-80">Card Type</p>
+                    <p className="font-bold">{card.cardType}</p>
+                  </div>
+                  <CreditCard className="h-8 w-8" />
+                </div>
+                <div className="mb-6">
+                  <p className="text-lg tracking-widest">{card.number}</p>
+                </div>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-xs opacity-80">Expires</p>
+                    <p>{card.expiry}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {cards.length === 0 && accounts.length > 0 && (
+              <div className="col-span-full flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl p-8 border border-dashed border-gray-300 shadow-sm">
+                <CreditCard className="h-12 w-12 text-indigo-400 mb-3" />
+                <p className="text-gray-500 mb-4">
+                  You don't have any cards yet
+                </p>
+                <Button
+                  onClick={() => navigate("/add-card")}
+                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700"
+                >
+                  <PlusCircle size={16} />
+                  Add Your First Card
+                </Button>
+              </div>
+            )}
+
+            {accounts.length === 0 && (
+              <div className="col-span-full flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl p-8 border border-dashed border-gray-300 shadow-sm">
+                <Wallet className="h-12 w-12 text-indigo-400 mb-3" />
+                <p className="text-gray-500 mb-4">
+                  Create an account first to add cards
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-2">
+          {accounts.map((account) => (
+            <Card
+              key={account.id}
+              className="border-gray-200 shadow-md overflow-hidden backdrop-blur-sm bg-white/80"
+            >
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gray-50/80">
+                <CardTitle className="text-sm font-medium">
+                  {account.type} Account
+                </CardTitle>
+                <CardDescription className="font-mono">
+                  {account.number}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-indigo-700">
+                  ${account.balance.toFixed(2)}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Available Balance</p>
+                <div className="flex space-x-2 mt-4">
+                  <Button
+                    className="flex-1 flex items-center justify-center gap-1 bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
+                    variant="outline"
+                    onClick={() => navigate("/deposit")}
+                  >
+                    <ArrowDownLeft className="h-4 w-4 text-green-600" />
+                    Deposit
+                  </Button>
+                  <Button
+                    className="flex-1 flex items-center justify-center gap-1 bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
+                    variant="outline"
+                    onClick={() => navigate("/withdraw")}
+                  >
+                    <ArrowUpRight className="h-4 w-4 text-red-600" />
+                    Withdraw
+                  </Button>
+                  <Button
+                    className="flex-1 flex items-center justify-center gap-1 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
+                    variant="outline"
+                    onClick={() => navigate("/transfer")}
+                  >
+                    <ArrowLeftRight className="h-4 w-4 text-blue-600" />
+                    Transfer
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+
+          {accounts.length === 0 && (
+            <div className="col-span-full flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl p-8 border border-dashed border-gray-300 shadow-sm">
+              <Wallet className="h-12 w-12 text-indigo-400 mb-3" />
+              <p className="text-gray-500 mb-4">
+                You don't have any accounts yet
+              </p>
+              <Button
+                onClick={() => navigate("/accounts")}
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700"
+              >
+                <PlusCircle size={16} />
+                Add Your First Account
+              </Button>
+            </div>
+          )}
+        </div>
 
         {/* Recent Transactions */}
-        <RecentTransactions
-          transactions={
-            transactions.length > 0
-              ? transactions
-              : JSON.parse(localStorage.getItem("userTransactions") || "[]")
-          }
-        />
+        <RecentTransactions transactions={transactions} />
       </div>
     </div>
   );
